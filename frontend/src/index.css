@@ -1,0 +1,126 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    font-family: 'Inter', ui-sans-serif, system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  body {
+    @apply bg-brand-50 text-slate-800;
+  }
+
+  h1, h2, h3, h4 {
+    @apply font-display font-semibold text-brand-900;
+  }
+}
+
+@layer components {
+  /* ===== Buttons ===== */
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg px-5 py-2.5 text-sm font-semibold transition focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-60 disabled:cursor-not-allowed;
+  }
+
+  /* Orange = primary CTA. White text, darker orange + glow on hover. */
+  .btn-primary {
+    @apply btn bg-action-500 text-white shadow-sm hover:bg-action-600 hover:shadow-glow hover:-translate-y-0.5 active:translate-y-0 focus:ring-action-400;
+  }
+
+  /* Bigger CTA pill used in hero / final blocks. */
+  .btn-cta {
+    @apply btn px-7 py-3 text-base bg-action-500 text-white shadow-md hover:bg-action-600 hover:shadow-glow hover:-translate-y-0.5 active:translate-y-0 focus:ring-action-400;
+  }
+
+  /* Green outline = secondary action. */
+  .btn-outline {
+    @apply btn border-2 border-brand-700 text-brand-800 hover:bg-brand-700 hover:text-white focus:ring-brand-500;
+  }
+
+  /* Light/white outline used on dark green hero backgrounds. */
+  .btn-ghost {
+    @apply btn border-2 border-white/60 text-white hover:bg-white hover:text-brand-900 focus:ring-white;
+  }
+
+  .btn-danger {
+    @apply btn bg-rose-600 text-white hover:bg-rose-500 focus:ring-rose-400;
+  }
+
+  /* ===== Form fields ===== */
+  .input {
+    @apply block w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500;
+  }
+  .label {
+    @apply mb-1 block text-sm font-medium text-slate-700;
+  }
+
+  /* ===== Cards ===== */
+  .card {
+    @apply rounded-xl bg-white shadow-soft;
+  }
+
+  /* ===== Badges ===== */
+  .badge {
+    @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium;
+  }
+  .badge-green { @apply badge bg-brand-50 text-brand-800; }
+  .badge-amber { @apply badge bg-accent-50 text-accent-800; }
+  .badge-orange { @apply badge bg-action-50 text-action-800; }
+  .badge-red { @apply badge bg-rose-50 text-rose-700; }
+  .badge-slate { @apply badge bg-slate-100 text-slate-700; }
+
+  /* Simple shimmer for image placeholders */
+  .skeleton {
+    @apply animate-pulse bg-slate-200;
+  }
+
+  /* ===== Sponsor marquee =====
+     A right-to-left infinite scroll. Render the list twice and animate
+     the inner track by -50% so the loop is seamless. Pauses on hover so
+     the user can read individual logos. */
+  .marquee {
+    @apply relative w-full overflow-hidden;
+  }
+  .marquee-track {
+    @apply flex w-max items-center gap-12 px-6;
+    animation: marquee-scroll 38s linear infinite;
+  }
+  .marquee:hover .marquee-track {
+    animation-play-state: paused;
+  }
+  .marquee-item {
+    @apply flex h-20 min-w-[180px] items-center justify-center rounded-xl bg-white px-5 shadow-soft;
+    /* Default: subtle grayscale; hover restores full colour. */
+    filter: grayscale(100%);
+    opacity: 0.75;
+    transition: filter 0.25s ease, opacity 0.25s ease, transform 0.25s ease;
+  }
+  .marquee-item:hover {
+    filter: grayscale(0%);
+    opacity: 1;
+    transform: translateY(-2px);
+  }
+  .marquee-fade {
+    @apply pointer-events-none absolute inset-y-0 w-16;
+  }
+  .marquee-fade--left {
+    left: 0;
+    background: linear-gradient(to right, #ffffff, rgba(255, 255, 255, 0));
+  }
+  .marquee-fade--right {
+    right: 0;
+    background: linear-gradient(to left, #ffffff, rgba(255, 255, 255, 0));
+  }
+}
+
+@keyframes marquee-scroll {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .marquee-track {
+    animation: none;
+  }
+}

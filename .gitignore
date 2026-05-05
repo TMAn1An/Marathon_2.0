@@ -1,0 +1,13 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+
+# Local env files (per-project ignore lives in subdirs too)
+.env
+.env.local
+node_modules/
+dist/
