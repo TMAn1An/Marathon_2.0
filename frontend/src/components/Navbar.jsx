@@ -1,91 +1,137 @@
-import { useState } from 'react'
-import { Link, NavLink } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { Link, NavLink, useLocation } from 'react-router-dom'
+import { motion } from 'framer-motion'
 
-const links = [
+const NAV = [
   { to: '/', label: 'Home' },
-  { to: '/about', label: 'About' },
-  { to: '/route', label: 'Route Map' },
-  { to: '/registration-info', label: 'Registration' },
-  { to: '/sponsors', label: 'Sponsors' },
-  { to: '/organizers', label: 'Organizers' },
-  { to: '/faq', label: 'FAQ' },
-  { to: '/results', label: 'Results' },
+  { to: '/events', label: 'Events' },
+  { to: '/news', label: 'News' },
+  { to: '/gallery', label: 'Gallery' },
   { to: '/certificate', label: 'Certificate' },
+  { to: '/about', label: 'About' },
 ]
 
 export default function Navbar() {
+  const [scrolled, setScrolled] = useState(false)
   const [open, setOpen] = useState(false)
+  const location = useLocation()
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 12)
+    onScroll()
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [])
+
+  useEffect(() => {
+    setOpen(false)
+  }, [location.pathname])
 
   return (
-    <header className="sticky top-0 z-30 border-b border-brand-100 bg-white/90 backdrop-blur">
-      <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3">
-        <Link to="/" className="flex items-center gap-2">
-          <span className="grid h-9 w-9 place-items-center rounded-lg bg-brand-900 text-accent-400 font-bold">
-            10K
-          </span>
-          <span className="leading-tight">
-            <span className="block text-sm font-semibold text-brand-900">IUBAT CSE</span>
-            <span className="block text-xs text-slate-500">10K Marathon</span>
-          </span>
+    <motion.header
+      initial={{ y: -24, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+      className={`fixed inset-x-0 top-0 z-40 transition-all ${
+        scrolled ? 'glass-nav border-b border-ink-200/70 shadow-sm' : 'bg-transparent'
+      }`}
+    >
+      <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-3 lg:px-8">
+        <Link to="/" className="flex items-center gap-3">
+          <img
+            src="https://placehold.co/96x96/ED1C24/ffffff?text=IUBAT&font=playfair"
+            alt="IUBAT logo"
+            className="h-9 w-9 rounded-lg ring-1 ring-ink-200"
+            loading="lazy"
+          />
+          <div className="hidden flex-col leading-none sm:flex">
+            <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-brand-600">
+              IUBAT SCSE
+            </span>
+            <span className="font-display text-base font-bold text-ink-900">MINI Marathon</span>
+          </div>
         </Link>
 
-        <nav className="hidden lg:flex items-center gap-1">
-          {links.map((l) => (
+        <nav className="hidden items-center gap-1 lg:flex">
+          {NAV.map((n) => (
             <NavLink
-              key={l.to}
-              to={l.to}
-              end={l.to === '/'}
+              key={n.to}
+              to={n.to}
+              end={n.to === '/'}
               className={({ isActive }) =>
-                `rounded-md px-3 py-2 text-sm font-medium transition ${
+                `relative rounded-full px-4 py-2 text-sm font-medium transition ${
                   isActive
-                    ? 'bg-brand-50 text-brand-900'
-                    : 'text-slate-600 hover:bg-slate-100 hover:text-brand-900'
+                    ? 'text-brand-600'
+                    : 'text-ink-700 hover:text-ink-900'
                 }`
               }
             >
-              {l.label}
+              {({ isActive }) => (
+                <>
+                  {n.label}
+                  {isActive && (
+                    <motion.span
+                      layoutId="nav-active"
+                      className="absolute inset-0 -z-10 rounded-full bg-brand-50"
+                      transition={{ type: 'spring', stiffness: 380, damping: 28 }}
+                    />
+                  )}
+                </>
+              )}
             </NavLink>
           ))}
         </nav>
 
-        <div className="hidden lg:flex items-center gap-2">
-          <Link to="/register" className="btn-primary">Register Now</Link>
+        <div className="hidden items-center gap-3 lg:flex">
+          <img
+            src="https://placehold.co/96x96/0f1118/ffffff?text=RUN"
+            alt="Marathon mark"
+            className="h-9 w-9 rounded-lg ring-1 ring-ink-200"
+            loading="lazy"
+          />
+          <Link to="/events" className="btn-primary">Register</Link>
         </div>
 
         <button
           type="button"
-          className="lg:hidden rounded-md p-2 text-slate-600 hover:bg-slate-100"
           onClick={() => setOpen((v) => !v)}
+          className="inline-flex h-10 w-10 items-center justify-center rounded-lg ring-1 ring-ink-200 lg:hidden"
           aria-label="Toggle menu"
+          aria-expanded={open}
         >
-          <svg width="22" height="22" viewBox="0 0 20 20" fill="currentColor"><path d="M3 5h14v2H3zM3 9h14v2H3zM3 13h14v2H3z"/></svg>
+          <span className="sr-only">Toggle menu</span>
+          <div className="space-y-1.5">
+            <span className={`block h-0.5 w-5 bg-ink-900 transition ${open ? 'translate-y-2 rotate-45' : ''}`} />
+            <span className={`block h-0.5 w-5 bg-ink-900 transition ${open ? 'opacity-0' : ''}`} />
+            <span className={`block h-0.5 w-5 bg-ink-900 transition ${open ? '-translate-y-2 -rotate-45' : ''}`} />
+          </div>
         </button>
       </div>
 
       {open && (
-        <div className="lg:hidden border-t border-slate-100 bg-white px-4 py-3 space-y-1">
-          {links.map((l) => (
-            <NavLink
-              key={l.to}
-              to={l.to}
-              end={l.to === '/'}
-              onClick={() => setOpen(false)}
-              className={({ isActive }) =>
-                `block rounded-md px-3 py-2 text-sm font-medium ${
-                  isActive
-                    ? 'bg-brand-50 text-brand-900'
-                    : 'text-slate-600 hover:bg-slate-100'
-                }`
-              }
-            >
-              {l.label}
-            </NavLink>
-          ))}
-          <Link to="/register" onClick={() => setOpen(false)} className="btn-primary w-full mt-2">
-            Register Now
-          </Link>
+        <div className="mx-4 mb-4 rounded-2xl bg-white p-4 shadow-card ring-1 ring-ink-100 lg:hidden">
+          <ul className="grid gap-1">
+            {NAV.map((n) => (
+              <li key={n.to}>
+                <NavLink
+                  to={n.to}
+                  end={n.to === '/'}
+                  className={({ isActive }) =>
+                    `block rounded-xl px-4 py-3 text-sm font-medium ${
+                      isActive ? 'bg-brand-50 text-brand-700' : 'text-ink-800 hover:bg-ink-50'
+                    }`
+                  }
+                >
+                  {n.label}
+                </NavLink>
+              </li>
+            ))}
+            <li>
+              <Link to="/events" className="btn-primary mt-2 w-full">Register</Link>
+            </li>
+          </ul>
         </div>
       )}
-    </header>
+    </motion.header>
   )
 }

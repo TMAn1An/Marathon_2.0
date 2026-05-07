@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Exceptions\RegistrationException;
+use App\Models\Event;
 use App\Models\Participant;
 use Illuminate\Support\Facades\DB;
 
@@ -13,61 +14,59 @@ class RegistrationService
     ) {}
 
     /**
-     * Reserves a slot for a new participant. Holds the slot for
-     * config('marathon.slots.hold_minutes') minutes pending payment.
+     * Reserve a slot for a public participant. Validates that registration is
+     * open, that no active (pending/confirmed) registration exists for the
+     * same email/phone in this event, and that the public slot pool isn't
+     * exhausted. Atomic / serializable.
      *
-     * Concurrency-safe: uses a serializable transaction and re-checks
-     * slot availability inside the transaction. Throws RegistrationException
-     * if email/phone are already used or if the event is full.
+     * @param  array<string,mixed>  $data
      */
-    public function reserveSlot(array $data): Participant
+    public function reservePublicSlot(Event $event, array $data): Participant
     {
-        $this->slotService->releaseExpiredReservations();
+        $this->assertEventOpenForPublic($event);
+        $this->slotService->releaseExpiredReservations($event);
 
-        return DB::transaction(function () use ($data) {
-            $existing = Participant::query()
-                ->where(function ($q) use ($data) {
-                    $q->where('email', $data['email'])
-                        ->orWhere('phone', $data['phone']);
-                })
-                ->whereIn('status', [
-                    Participant::STATUS_RESERVED,
-                    Participant::STATUS_PENDING_PAYMENT,
-                    Participant::STATUS_CONFIRMED,
-                ])
-                ->first();
+        return DB::transaction(function () use ($event, $data) {
+            $this->assertCategoryIsPublic($data['category'] ?? null);
+            $this->assertNoActiveDuplicate($event, $data['email'], $data['phone']);
 
-            if ($existing) {
+            if ($this->slotService->isPublicFull($event)) {
                 throw new RegistrationException(
-                    'A participant with this email or phone is already registered.',
-                    409
+                    'Sorry, all public slots for this event have been filled.',
+                    410
                 );
             }
 
-            if ($this->slotService->isFull()) {
-                throw new RegistrationException('Sorry, all marathon slots have been filled.', 410);
-            }
-
-            $holdMinutes = (int) config('marathon.slots.hold_minutes');
-
-            return Participant::create([
-                'full_name' => $data['full_name'],
-                'university_id' => $data['university_id'],
-                'category' => $data['category'],
-                'phone' => $data['phone'],
-                'email' => $data['email'],
-                'emergency_contact' => $data['emergency_contact'],
-                'tshirt_size' => $data['tshirt_size'],
-                'status' => Participant::STATUS_RESERVED,
-                'slot_reserved_until' => now()->addMinutes($holdMinutes),
-            ]);
+            return Participant::create($this->payload($event, $data, Participant::STATUS_RESERVED));
         });
     }
 
     /**
-     * Refreshes the slot reservation window for a participant who is still
-     * in the registration funnel. Returns false if the slot is gone.
+     * Admin-side guest creation. Bypasses public registration lock and the
+     * public slot pool — guests sit in a reserved BIB range (1..guest_limit).
      */
+    public function createGuestParticipant(Event $event, array $data): Participant
+    {
+        return DB::transaction(function () use ($event, $data) {
+            $this->assertNoActiveDuplicate($event, $data['email'], $data['phone']);
+
+            $guestUsed = $this->slotService->usedSlots($event, Participant::CATEGORY_GUEST);
+            if ($guestUsed >= $event->guest_slot_limit) {
+                throw new RegistrationException(
+                    'Guest reservation is full for this event.',
+                    410
+                );
+            }
+
+            return Participant::create($this->payload(
+                $event,
+                array_merge($data, ['category' => Participant::CATEGORY_GUEST]),
+                Participant::STATUS_CONFIRMED,
+                confirmed: true,
+            ));
+        });
+    }
+
     public function refreshHold(Participant $participant): bool
     {
         if ($participant->status === Participant::STATUS_CONFIRMED) {
@@ -81,11 +80,82 @@ class RegistrationService
             return false;
         }
 
-        $participant->slot_reserved_until = now()->addMinutes(
-            (int) config('marathon.slots.hold_minutes')
-        );
+        $event = $participant->event ?? Event::query()->find($participant->event_id);
+        $hold = $event?->hold_minutes ?? (int) config('marathon.event_defaults.hold_minutes');
+
+        $participant->slot_reserved_until = now()->addMinutes($hold);
         $participant->save();
 
         return true;
+    }
+
+    protected function payload(Event $event, array $data, string $status, bool $confirmed = false): array
+    {
+        return [
+            'event_id' => $event->id,
+            'full_name' => $data['full_name'],
+            'university_id' => $data['university_id'] ?? null,
+            'category' => $data['category'],
+            'gender' => $data['gender'] ?? null,
+            'department' => $data['department'] ?? null,
+            'phone' => $data['phone'],
+            'email' => strtolower($data['email']),
+            'emergency_contact' => $data['emergency_contact'] ?? null,
+            'tshirt_size' => $data['tshirt_size'],
+            'status' => $status,
+            'slot_reserved_until' => $confirmed ? null : now()->addMinutes($event->hold_minutes),
+            'confirmed_at' => $confirmed ? now() : null,
+        ];
+    }
+
+    protected function assertCategoryIsPublic(?string $category): void
+    {
+        if (! in_array($category, Participant::PUBLIC_CATEGORIES, true)) {
+            throw new RegistrationException(
+                'Only student or faculty registrations are allowed from the public form.',
+                422
+            );
+        }
+    }
+
+    protected function assertEventOpenForPublic(Event $event): void
+    {
+        if ($event->isPast()) {
+            throw new RegistrationException(
+                'This event has already concluded; registration is closed.',
+                410
+            );
+        }
+
+        if (! $event->registrationOpen()) {
+            throw new RegistrationException(
+                'Registration is not open yet for this event.',
+                423
+            );
+        }
+    }
+
+    protected function assertNoActiveDuplicate(Event $event, string $email, string $phone): void
+    {
+        $email = strtolower($email);
+
+        $existing = Participant::query()
+            ->where('event_id', $event->id)
+            ->where(function ($q) use ($email, $phone) {
+                $q->where('email', $email)->orWhere('phone', $phone);
+            })
+            ->whereIn('status', [
+                Participant::STATUS_RESERVED,
+                Participant::STATUS_PENDING_PAYMENT,
+                Participant::STATUS_CONFIRMED,
+            ])
+            ->first();
+
+        if ($existing) {
+            throw new RegistrationException(
+                'A participant with this email or phone is already registered for this event.',
+                409
+            );
+        }
     }
 }

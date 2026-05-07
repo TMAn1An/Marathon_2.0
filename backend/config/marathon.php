@@ -4,44 +4,45 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Marathon event configuration
+    | IUBAT SCSE MINI Marathon — platform configuration
     |--------------------------------------------------------------------------
     |
-    | These values control the runtime behaviour of the IUBAT CSE 10K Marathon
-    | Management System: total available slots, registration fees, slot
-    | reservation TTL, BIB number prefix, and event metadata used in
-    | certificates and emails.
+    | Multi-event values live on the `events` table; the values below are the
+    | defaults applied to seeded events plus platform-level metadata used by
+    | mailers, BIB generation, and verification URLs.
     |
     */
 
-    'event' => [
-        'name' => env('MARATHON_EVENT_NAME', 'IUBAT CSE 10K Marathon'),
-        'date' => env('MARATHON_EVENT_DATE', '2026-12-12'),
-        'venue' => env('MARATHON_EVENT_VENUE', 'IUBAT Main Campus, Uttara, Dhaka'),
-        'organizer' => env('MARATHON_EVENT_ORGANIZER', 'IUBAT CSE Department'),
-        'result_url' => env('MARATHON_RESULT_URL', 'https://example.com/marathon-results'),
+    'platform' => [
+        'name' => env('MARATHON_PLATFORM_NAME', 'IUBAT SCSE MINI Marathon'),
+        'organizer' => env('MARATHON_ORGANIZER', 'IUBAT School of Computer Science & Engineering'),
         'support_email' => env('MARATHON_SUPPORT_EMAIL', 'marathon@iubat.edu'),
+        'frontend_url' => env('MARATHON_FRONTEND_URL', 'http://localhost:5173'),
     ],
 
-    'slots' => [
-        'total' => (int) env('MARATHON_TOTAL_SLOTS', 400),
-        // Slot reservation TTL in minutes (10 minutes per spec).
+    'event_defaults' => [
+        'total_slots' => (int) env('MARATHON_TOTAL_SLOTS', 400),
+        'guest_slot_limit' => (int) env('MARATHON_GUEST_SLOT_LIMIT', 30),
         'hold_minutes' => (int) env('MARATHON_HOLD_MINUTES', 10),
+        'student_fee_bdt' => (int) env('MARATHON_FEE_STUDENT', 500),
+        'faculty_fee_bdt' => (int) env('MARATHON_FEE_FACULTY', 800),
     ],
 
-    'fees' => [
-        'student' => (int) env('MARATHON_FEE_STUDENT', 500),
-        'faculty' => (int) env('MARATHON_FEE_FACULTY', 1000),
+    'registration' => [
+        // Global lock — registration form stays hidden until this date even if
+        // an event has registration_unlock_at unset. Admin can override per
+        // event by setting status = live.
+        'global_unlock_at' => env('MARATHON_REGISTRATION_UNLOCK_AT', '2026-07-02 00:00:00'),
+        'timezone' => env('MARATHON_TIMEZONE', 'Asia/Dhaka'),
     ],
 
     'bib' => [
-        'prefix' => env('MARATHON_BIB_PREFIX', 'IUB'),
-        // Total length of the numeric component, zero-padded.
+        'prefix' => env('MARATHON_BIB_PREFIX', 'MIN'),
+        'separator' => env('MARATHON_BIB_SEPARATOR', '_'),
         'pad_length' => (int) env('MARATHON_BIB_PAD_LENGTH', 4),
     ],
 
     'verification' => [
-        // Public-facing certificate verification URL template. {uuid} is replaced.
         'url_template' => env(
             'MARATHON_VERIFY_URL',
             'http://localhost:5173/verify/{uuid}'

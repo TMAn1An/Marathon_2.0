@@ -6,6 +6,7 @@ use App\Exceptions\PaymentException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\ConfirmPaymentRequest;
 use App\Http\Requests\Api\InitiatePaymentRequest;
+use App\Models\Event;
 use App\Models\Participant;
 use App\Models\Payment;
 use App\Services\PaymentService;
@@ -15,14 +16,11 @@ class PaymentController extends Controller
 {
     public function __construct(protected PaymentService $payments) {}
 
-    /**
-     * POST /api/payments/initiate
-     * Creates a pending payment for a reserved participant. Returns the
-     * transaction id which the simulated checkout uses.
-     */
-    public function initiate(InitiatePaymentRequest $request): JsonResponse
+    public function initiate(Event $event, InitiatePaymentRequest $request): JsonResponse
     {
-        $participant = Participant::findOrFail($request->validated()['participant_id']);
+        $participant = Participant::query()
+            ->where('event_id', $event->id)
+            ->findOrFail($request->validated()['participant_id']);
 
         try {
             $payment = $this->payments->initiate($participant, $request->validated()['gateway']);

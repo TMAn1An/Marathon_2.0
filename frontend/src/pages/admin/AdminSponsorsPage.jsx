@@ -71,7 +71,7 @@ export default function AdminSponsorsPage() {
                 </td>
                 <td className="px-4 py-3 capitalize">{s.tier}</td>
                 <td className="px-4 py-3">
-                  <span className={s.is_active ? 'badge-green' : 'badge-slate'}>{s.is_active ? 'Active' : 'Hidden'}</span>
+                  <span className={`pill ${s.is_active ? 'bg-emerald-100 text-emerald-800' : 'bg-ink-100 text-ink-700'}`}>{s.is_active ? 'Active' : 'Hidden'}</span>
                 </td>
                 <td className="px-4 py-3">{s.display_order}</td>
                 <td className="px-4 py-3 space-x-2 text-right">

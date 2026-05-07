@@ -71,7 +71,7 @@ export default function AdminVolunteersPage() {
                 </td>
                 <td className="px-4 py-3">{v.role}</td>
                 <td className="px-4 py-3">
-                  <span className={v.is_active ? 'badge-green' : 'badge-slate'}>{v.is_active ? 'Active' : 'Hidden'}</span>
+                  <span className={`pill ${v.is_active ? 'bg-emerald-100 text-emerald-800' : 'bg-ink-100 text-ink-700'}`}>{v.is_active ? 'Active' : 'Hidden'}</span>
                 </td>
                 <td className="px-4 py-3">{v.display_order}</td>
                 <td className="px-4 py-3 space-x-2 text-right">

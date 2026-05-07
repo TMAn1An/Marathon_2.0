@@ -22,20 +22,21 @@ export function formatDateTime(value) {
 }
 
 export function statusBadgeClass(status) {
+  const base = 'pill '
   switch (status) {
     case 'confirmed':
     case 'completed':
     case 'sent':
-      return 'badge-green'
+      return base + 'bg-emerald-100 text-emerald-800'
     case 'reserved':
     case 'pending':
     case 'pending_payment':
     case 'queued':
-      return 'badge-amber'
+      return base + 'bg-amber-100 text-amber-800'
     case 'failed':
     case 'cancelled':
-      return 'badge-red'
+      return base + 'bg-rose-100 text-rose-700'
     default:
-      return 'badge-slate'
+      return base + 'bg-ink-100 text-ink-700'
   }
 }

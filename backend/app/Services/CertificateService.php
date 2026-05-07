@@ -3,23 +3,34 @@
 namespace App\Services;
 
 use App\Models\Certificate;
+use App\Models\CertificateTemplate;
+use App\Models\Event;
 use App\Models\Participant;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Storage;
+use RuntimeException;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
 class CertificateService
 {
     /**
-     * Generates (or returns existing) certificate metadata for a participant.
-     * The actual PDF is rendered on demand to keep the generated_at flag
-     * accurate even if templates change later.
+     * Per-spec: certificates are downloadable ONLY when the event is past.
      */
-    public function getOrCreate(Participant $participant): Certificate
+    public function assertDownloadable(Participant $participant): void
     {
         if (! $participant->isConfirmed()) {
-            throw new \RuntimeException('Certificates are only available for confirmed participants.');
+            throw new RuntimeException('Certificates are only available for confirmed participants.');
         }
+
+        $event = $participant->event ?? Event::query()->find($participant->event_id);
+        if (! $event || ! $event->isPast()) {
+            throw new RuntimeException('Certificates unlock once the event finishes. Please check back later.');
+        }
+    }
+
+    public function getOrCreate(Participant $participant): Certificate
+    {
+        $this->assertDownloadable($participant);
 
         return Certificate::firstOrCreate(
             ['participant_id' => $participant->id],
@@ -27,14 +38,15 @@ class CertificateService
         );
     }
 
-    /**
-     * Renders the participant's certificate PDF and returns the binary
-     * blob. Embeds a verification QR code that resolves to the
-     * configured public verify URL.
-     */
     public function renderPdf(Participant $participant): string
     {
         $certificate = $this->getOrCreate($participant);
+        $event = $participant->event ?? Event::query()->find($participant->event_id);
+
+        $template = $event?->certificateTemplate ?? new CertificateTemplate([
+            'event_id' => $event?->id,
+            'primary_color' => '#ED1C24',
+        ]);
 
         $verifyUrl = str_replace(
             '{uuid}',
@@ -43,14 +55,18 @@ class CertificateService
         );
 
         $qrSvg = QrCode::format('svg')->size(160)->margin(0)->generate($verifyUrl);
-        $qrDataUri = 'data:image/svg+xml;base64,' . base64_encode($qrSvg);
+        $qrDataUri = 'data:image/svg+xml;base64,'.base64_encode($qrSvg);
 
         $pdf = Pdf::loadView('certificates.default', [
             'participant' => $participant,
             'certificate' => $certificate,
+            'event' => $event,
+            'template' => $template,
+            'signature1' => $this->signaturePayload($template, 1),
+            'signature2' => $this->signaturePayload($template, 2),
             'verifyUrl' => $verifyUrl,
             'qrDataUri' => $qrDataUri,
-            'event' => config('marathon.event'),
+            'platformName' => config('marathon.platform.name'),
         ])->setPaper('a4', 'landscape');
 
         $certificate->increment('download_count');
@@ -61,36 +77,60 @@ class CertificateService
         return $pdf->output();
     }
 
-    /**
-     * Looks up a confirmed participant by phone or BIB number for the
-     * public certificate download endpoint. Returns null when not found.
-     */
-    public function findEligible(string $query): ?Participant
+    public function findEligible(string $query, ?int $eventId = null): ?Participant
     {
         $query = trim($query);
         if ($query === '') {
             return null;
         }
 
-        return Participant::query()
+        $builder = Participant::query()
+            ->with('event')
             ->where('status', Participant::STATUS_CONFIRMED)
             ->where(function ($q) use ($query) {
                 $q->where('phone', $query)
                     ->orWhere('bib_number', $query);
-            })
-            ->first();
+            });
+
+        if ($eventId) {
+            $builder->where('event_id', $eventId);
+        }
+
+        return $builder->first();
     }
 
-    /**
-     * Verifies a certificate by UUID. Returns the participant if valid.
-     */
     public function verify(string $uuid): ?Participant
     {
         $certificate = Certificate::query()
             ->where('certificate_uuid', $uuid)
-            ->with('participant')
+            ->with('participant.event')
             ->first();
 
         return $certificate?->participant;
+    }
+
+    /**
+     * @return array{path: ?string, name: ?string, designation: ?string, dataUri: ?string}
+     */
+    protected function signaturePayload(CertificateTemplate $template, int $index): array
+    {
+        $pathField = "signature_{$index}_path";
+        $nameField = "signature_{$index}_name";
+        $designationField = "signature_{$index}_designation";
+
+        $path = $template->{$pathField} ?? null;
+        $dataUri = null;
+        if ($path && Storage::disk('public')->exists($path)) {
+            $abs = Storage::disk('public')->path($path);
+            $mime = mime_content_type($abs) ?: 'image/png';
+            $dataUri = 'data:'.$mime.';base64,'.base64_encode(file_get_contents($abs));
+        }
+
+        return [
+            'path' => $path,
+            'name' => $template->{$nameField} ?? null,
+            'designation' => $template->{$designationField} ?? null,
+            'dataUri' => $dataUri,
+        ];
     }
 }

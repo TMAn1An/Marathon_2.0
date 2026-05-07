@@ -1,59 +1,52 @@
-import { Link, useLocation } from 'react-router-dom'
-import { formatCurrency } from '../utils/format'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
+import { useEffect } from 'react'
+import { motion } from 'framer-motion'
 
 export default function PaymentSuccessPage() {
+  const navigate = useNavigate()
   const { state } = useLocation()
   const participant = state?.participant
-  const payment = state?.payment
+  const event = state?.event
 
-  if (!participant) {
-    return (
-      <div className="mx-auto max-w-2xl px-4 py-20 text-center">
-        <h1 className="text-3xl">No payment in progress</h1>
-        <p className="mt-3 text-slate-600">Visit the registration page to start your registration.</p>
-        <Link to="/register" className="btn-primary mt-6 inline-flex">Go to registration</Link>
-      </div>
-    )
-  }
+  useEffect(() => {
+    if (!participant) navigate('/events', { replace: true })
+  }, [participant, navigate])
+
+  if (!participant) return null
 
   return (
-    <div className="mx-auto max-w-3xl px-4 py-16">
-      <div className="card p-8 text-center">
-        <div className="mx-auto h-14 w-14 grid place-items-center rounded-full bg-emerald-100 text-emerald-600 text-3xl">✓</div>
-        <h1 className="mt-4 text-3xl">You're in!</h1>
-        <p className="mt-2 text-slate-600">
-          Welcome to the IUBAT CSE 10K Marathon, {participant.full_name}.
-        </p>
-
-        <div className="mt-6 rounded-lg bg-brand-50 p-5 text-left">
-          <div className="grid gap-3 sm:grid-cols-2">
+    <div className="bg-ink-50 py-20">
+      <div className="mx-auto max-w-2xl px-6 text-center lg:px-8">
+        <motion.div
+          initial={{ scale: 0.8, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ type: 'spring', stiffness: 220, damping: 18 }}
+          className="card-elevated p-10"
+        >
+          <div className="mx-auto grid h-16 w-16 place-items-center rounded-full bg-brand-50 text-brand-600 ring-1 ring-brand-200">
+            <svg className="h-7 w-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M5 13l4 4L19 7" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </div>
+          <h1 className="mt-6 font-display text-3xl font-bold text-ink-900">You're in!</h1>
+          <p className="mt-2 text-sm text-ink-600">
+            Your BIB has been issued and a confirmation email is on the way.
+          </p>
+          <div className="mt-8 grid gap-4 rounded-2xl bg-ink-50 p-6 ring-1 ring-ink-100 sm:grid-cols-2">
             <div>
-              <p className="text-xs uppercase tracking-wide text-slate-500">BIB Number</p>
-              <p className="text-2xl font-bold text-brand-900">{participant.bib_number || '—'}</p>
+              <div className="text-xs font-semibold uppercase tracking-widest text-ink-500">BIB Number</div>
+              <div className="mt-1 font-mono text-2xl font-bold text-brand-600">{participant.bib_number}</div>
             </div>
             <div>
-              <p className="text-xs uppercase tracking-wide text-slate-500">Status</p>
-              <p className="text-brand-900 font-semibold capitalize">{participant.status}</p>
-            </div>
-            <div>
-              <p className="text-xs uppercase tracking-wide text-slate-500">Transaction</p>
-              <p className="font-mono text-sm text-slate-700">{payment?.transaction_id}</p>
-            </div>
-            <div>
-              <p className="text-xs uppercase tracking-wide text-slate-500">Paid</p>
-              <p className="text-slate-700">{formatCurrency(payment?.amount)}</p>
+              <div className="text-xs font-semibold uppercase tracking-widest text-ink-500">Runner</div>
+              <div className="mt-1 font-display text-lg text-ink-900">{participant.full_name}</div>
             </div>
           </div>
-        </div>
-
-        <p className="mt-6 text-sm text-slate-600">
-          A confirmation email is on the way. You can download your finisher certificate here after the race.
-        </p>
-
-        <div className="mt-6 flex flex-wrap justify-center gap-3">
-          <Link to="/" className="btn-outline">Back to home</Link>
-          <Link to="/certificate" className="btn-primary">Open certificate page</Link>
-        </div>
+          <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+            {event && <Link to={`/events/${event.slug}`} className="btn-outline">Back to event</Link>}
+            <Link to="/news" className="btn-primary">Read race-day briefing</Link>
+          </div>
+        </motion.div>
       </div>
     </div>
   )

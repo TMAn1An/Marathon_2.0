@@ -16,8 +16,10 @@ class RegisterParticipantRequest extends FormRequest
     {
         return [
             'full_name' => ['required', 'string', 'min:3', 'max:150'],
-            'university_id' => ['required', 'string', 'max:50'],
+            'university_id' => ['nullable', 'string', 'max:50'],
             'category' => ['required', Rule::in(['student', 'faculty'])],
+            'gender' => ['required', Rule::in(['male', 'female'])],
+            'department' => ['required', 'string', 'max:120'],
             'phone' => ['required', 'string', 'regex:/^\+?[0-9 \-]{7,20}$/'],
             'email' => ['required', 'email:rfc', 'max:191'],
             'emergency_contact' => ['required', 'string', 'regex:/^\+?[0-9 \-]{7,20}$/'],

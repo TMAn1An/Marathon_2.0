@@ -2,11 +2,8 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>{{ $event['name'] ?? 'IUBAT CSE 10K Marathon' }} — Certificate of Participation</title>
+    <title>{{ $event?->title ?? $platformName }} — Certificate of Participation</title>
     <style>
-        /* A4 landscape with zero @page margin gives us a fixed 297 x 210 mm
-           printable canvas. Everything below is positioned with absolute
-           coordinates so dompdf never reflows content onto a second page. */
         @page { size: A4 landscape; margin: 0; }
         * { box-sizing: border-box; }
         html, body {
@@ -15,45 +12,50 @@
             width: 297mm;
             height: 210mm;
             font-family: 'DejaVu Sans', sans-serif;
-            color: #0f5b32;
+            color: #1f2937;
             background: #ffffff;
         }
 
-        /* Decorative frame: drawn as solid borders on a div that sits ~6mm
-           inside the page edge so the printer never clips it. */
         .frame {
             position: absolute;
             top: 6mm;
             left: 6mm;
             width: 285mm;
             height: 198mm;
-            border: 3mm solid #0e4a2c;
-            box-shadow: none;
-        }
-        .frame::before {
-            /* dompdf supports limited pseudo-elements but background colour
-               on a wrapper div works well enough as the inner accent line. */
-            content: '';
+            border: 2.6mm solid {{ $template->primary_color ?? '#ED1C24' }};
         }
         .frame-accent {
             position: absolute;
-            top: 9mm;
-            left: 9mm;
-            width: 279mm;
-            height: 192mm;
-            border: 0.6mm solid #f99c07;
+            top: 9.4mm;
+            left: 9.4mm;
+            width: 278.2mm;
+            height: 191.2mm;
+            border: 0.5mm solid {{ $template->primary_color ?? '#ED1C24' }};
+            opacity: 0.55;
         }
+
+        .corner {
+            position: absolute;
+            width: 36mm;
+            height: 36mm;
+            border: 0.6mm solid {{ $template->primary_color ?? '#ED1C24' }};
+            opacity: 0.35;
+        }
+        .corner.tl { top: 14mm; left: 14mm; border-right: none; border-bottom: none; }
+        .corner.tr { top: 14mm; right: 14mm; border-left: none; border-bottom: none; }
+        .corner.bl { bottom: 14mm; left: 14mm; border-right: none; border-top: none; }
+        .corner.br { bottom: 14mm; right: 14mm; border-left: none; border-top: none; }
 
         .ribbon {
             position: absolute;
             top: 4mm;
             left: 50%;
-            margin-left: -50mm;
-            width: 100mm;
-            background: #f96015;
+            margin-left: -55mm;
+            width: 110mm;
+            background: {{ $template->primary_color ?? '#ED1C24' }};
             color: #ffffff;
             font-size: 9pt;
-            letter-spacing: 3pt;
+            letter-spacing: 4pt;
             font-weight: 700;
             text-transform: uppercase;
             text-align: center;
@@ -62,12 +64,12 @@
 
         .institution {
             position: absolute;
-            top: 24mm;
+            top: 22mm;
             left: 0;
             width: 297mm;
             text-align: center;
-            color: #0d723c;
-            font-size: 11pt;
+            color: {{ $template->primary_color ?? '#ED1C24' }};
+            font-size: 10pt;
             letter-spacing: 5pt;
             font-weight: 700;
             text-transform: uppercase;
@@ -75,82 +77,84 @@
 
         .title {
             position: absolute;
-            top: 36mm;
+            top: 32mm;
             left: 0;
             width: 297mm;
             text-align: center;
-            color: #0e4a2c;
-            font-size: 30pt;
+            color: #111827;
+            font-size: 32pt;
             font-weight: 800;
-            letter-spacing: 0.5pt;
+            letter-spacing: 1pt;
             line-height: 1;
             margin: 0;
         }
-
         .title-rule {
             position: absolute;
-            top: 56mm;
+            top: 53mm;
             left: 50%;
             margin-left: -28mm;
             width: 56mm;
             height: 0.7mm;
-            background: #f99c07;
+            background: {{ $template->primary_color ?? '#ED1C24' }};
         }
 
         .preface {
             position: absolute;
-            top: 64mm;
+            top: 60mm;
             left: 0;
             width: 297mm;
             text-align: center;
-            color: #1f2937;
+            color: #4b5563;
             font-size: 12pt;
             margin: 0;
         }
 
         .name {
             position: absolute;
-            top: 76mm;
+            top: 72mm;
             left: 0;
             width: 297mm;
             text-align: center;
-            color: #0e4a2c;
-            font-size: 36pt;
+            color: #111827;
+            font-size: 38pt;
             font-weight: 800;
             line-height: 1.1;
         }
         .name-text {
             display: inline-block;
             border-bottom: 0.6pt solid #cbd5e1;
-            padding: 0 6mm 1.5mm;
+            padding: 0 8mm 1.5mm;
         }
 
         .description {
             position: absolute;
-            top: 102mm;
+            top: 100mm;
             left: 30mm;
             width: 237mm;
             text-align: center;
-            color: #1f2937;
+            color: #374151;
             font-size: 11pt;
-            line-height: 1.5;
+            line-height: 1.55;
         }
-        .description strong { color: #0e4a2c; }
+        .description strong { color: {{ $template->primary_color ?? '#ED1C24' }}; }
 
+        /* Metadata strip implemented with flex (DOMPDF-compatible). */
         .meta {
             position: absolute;
             top: 130mm;
             left: 30mm;
             width: 237mm;
-            border-collapse: collapse;
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
         }
-        .meta td {
-            padding: 0 4mm;
+        .meta-cell {
+            flex: 1;
             text-align: center;
-            border-left: 0.5pt solid #d1d5db;
-            vertical-align: top;
+            border-left: 0.5pt solid #e5e7eb;
+            padding: 0 4mm;
         }
-        .meta td:first-child { border-left: none; }
+        .meta-cell:first-child { border-left: none; }
         .meta-label {
             font-size: 7.5pt;
             text-transform: uppercase;
@@ -162,134 +166,155 @@
         .meta-value {
             font-size: 14pt;
             font-weight: 700;
-            color: #0e4a2c;
+            color: #111827;
         }
-        .meta-value.bib {
-            color: #c1370c;
-            letter-spacing: 0.8pt;
-        }
+        .meta-value.bib { color: {{ $template->primary_color ?? '#ED1C24' }}; letter-spacing: 0.8pt; }
 
         .footer {
             position: absolute;
-            top: 178mm;
+            top: 174mm;
             left: 18mm;
             width: 261mm;
-            border-collapse: collapse;
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+            align-items: flex-end;
         }
-        .footer td { vertical-align: bottom; }
-        .footer .sig { width: 35%; text-align: center; }
-        .footer .spacer { width: 10%; }
-        .footer .qr-cell { width: 20%; text-align: right; }
-        .signature-line {
-            border-top: 0.5pt solid #6b7280;
-            margin: 0 6mm;
-            padding-top: 1mm;
+        .sig {
+            width: 35%;
+            text-align: center;
             color: #374151;
-            font-size: 9.5pt;
-            font-weight: 600;
+            font-size: 10pt;
         }
-        .signature-role {
-            color: #6b7280;
-            font-size: 7.5pt;
-            margin-top: 0.4mm;
+        .sig img {
+            display: block;
+            margin: 0 auto 1mm;
+            max-height: 14mm;
         }
+        .sig-line {
+            border-top: 0.5pt solid #9ca3af;
+            margin: 0 8mm 1.5mm;
+            padding-top: 1.2mm;
+        }
+        .sig-name { font-weight: 700; color: #111827; }
+        .sig-role { font-size: 9pt; color: #6b7280; }
 
         .qr {
-            position: absolute;
-            top: 168mm;
-            right: 18mm;
-            text-align: right;
-            width: 36mm;
-        }
-        .qr img {
-            width: 22mm;
-            height: 22mm;
-            border: 0.4mm solid #d1d5db;
-            padding: 0.7mm;
-            background: #ffffff;
-        }
-        .qr-caption {
-            font-size: 6.5pt;
+            text-align: center;
             color: #6b7280;
-            margin-top: 1mm;
-            word-break: break-all;
-            text-align: right;
+            font-size: 8pt;
+        }
+        .qr img { width: 22mm; height: 22mm; display: block; margin: 0 auto 1mm; }
+
+        .footer-meta {
+            position: absolute;
+            bottom: 8mm;
+            left: 18mm;
+            width: 261mm;
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+            font-size: 8pt;
+            color: #9ca3af;
+            letter-spacing: 0.5pt;
         }
     </style>
 </head>
 <body>
     <div class="frame"></div>
     <div class="frame-accent"></div>
+    <div class="corner tl"></div>
+    <div class="corner tr"></div>
+    <div class="corner bl"></div>
+    <div class="corner br"></div>
 
-    <div class="ribbon">{{ $event['organizer'] ?? 'IUBAT · CSE Department' }}</div>
-
-    <div class="institution">{{ $event['name'] ?? 'IUBAT CSE 10K Marathon' }}</div>
+    <div class="ribbon">{{ $platformName }}</div>
+    <div class="institution">{{ config('marathon.platform.organizer') }}</div>
 
     <h1 class="title">Certificate of Participation</h1>
     <div class="title-rule"></div>
 
-    <p class="preface">This is to certify that</p>
+    <p class="preface">This certificate is proudly presented to</p>
 
     <div class="name">
         <span class="name-text">{{ $participant->full_name }}</span>
     </div>
 
-    <p class="description">
-        successfully participated in the
-        <strong>{{ $event['name'] ?? 'IUBAT CSE 10K Marathon' }}</strong>
-        held on <strong>{{ $event['date'] ?? '' }}</strong>
-        at <strong>{{ $event['venue'] ?? 'IUBAT Main Campus, Uttara, Dhaka' }}</strong>,
-        completing the 10&nbsp;kilometre course in the
-        {{ ucfirst($participant->category) }} category.
-    </p>
+    <div class="description">
+        for completing the <strong>{{ $event?->title ?? $platformName }}</strong>
+        @if ($event?->event_date)
+            held on {{ $event->event_date->format('F j, Y') }}
+        @endif
+        @if ($event?->location)
+            at <strong>{{ $event->location }}</strong>
+        @endif.
+    </div>
 
-    <table class="meta">
-        <tr>
-            <td>
-                <span class="meta-label">BIB Number</span>
-                <span class="meta-value bib">{{ $participant->bib_number }}</span>
-            </td>
-            <td>
-                <span class="meta-label">Category</span>
-                <span class="meta-value">{{ ucfirst($participant->category) }}</span>
-            </td>
-            @if (!empty($participant->finish_time))
-                <td>
-                    <span class="meta-label">Finish Time</span>
-                    <span class="meta-value">{{ $participant->finish_time }}</span>
-                </td>
+    <div class="meta">
+        <div class="meta-cell">
+            <span class="meta-label">BIB Number</span>
+            <span class="meta-value bib">{{ $participant->bib_number ?: '—' }}</span>
+        </div>
+        <div class="meta-cell">
+            <span class="meta-label">Category</span>
+            <span class="meta-value">{{ ucfirst($participant->category) }}</span>
+        </div>
+        @if ($participant->chip_time)
+        <div class="meta-cell">
+            <span class="meta-label">Chip Time</span>
+            <span class="meta-value">{{ $participant->chip_time }}</span>
+        </div>
+        @endif
+        @if ($participant->overall_place)
+        <div class="meta-cell">
+            <span class="meta-label">Overall Rank</span>
+            <span class="meta-value">#{{ $participant->overall_place }}</span>
+        </div>
+        @endif
+        @if ($participant->gender_place)
+        <div class="meta-cell">
+            <span class="meta-label">{{ ucfirst($participant->gender ?? 'Gender') }} Rank</span>
+            <span class="meta-value">#{{ $participant->gender_place }}</span>
+        </div>
+        @endif
+    </div>
+
+    <div class="footer">
+        <div class="sig">
+            @if (! empty($signature1['dataUri']))
+                <img src="{{ $signature1['dataUri'] }}" alt="">
             @endif
-            @if (!empty($participant->rank))
-                <td>
-                    <span class="meta-label">Rank</span>
-                    <span class="meta-value">#{{ $participant->rank }}</span>
-                </td>
+            <div class="sig-line"></div>
+            @if ($signature1['name'])
+                <div class="sig-name">{{ $signature1['name'] }}</div>
             @endif
-            <td>
-                <span class="meta-label">Event Date</span>
-                <span class="meta-value">{{ $event['date'] ?? '' }}</span>
-            </td>
-        </tr>
-    </table>
+            @if ($signature1['designation'])
+                <div class="sig-role">{{ $signature1['designation'] }}</div>
+            @endif
+        </div>
 
-    <table class="footer">
-        <tr>
-            <td class="sig">
-                <div class="signature-line">Race Director</div>
-                <div class="signature-role">IUBAT CSE 10K Marathon</div>
-            </td>
-            <td class="spacer">&nbsp;</td>
-            <td class="sig">
-                <div class="signature-line">Head, CSE Department</div>
-                <div class="signature-role">IUBAT</div>
-            </td>
-            <td class="spacer">&nbsp;</td>
-        </tr>
-    </table>
+        <div class="qr">
+            <img src="{{ $qrDataUri }}" alt="">
+            <div>Verify · {{ $certificate->certificate_uuid }}</div>
+        </div>
 
-    <div class="qr">
-        <img src="{{ $qrDataUri }}" alt="Verification QR" />
-        <div class="qr-caption">Scan to verify</div>
+        <div class="sig">
+            @if (! empty($signature2['dataUri']))
+                <img src="{{ $signature2['dataUri'] }}" alt="">
+            @endif
+            <div class="sig-line"></div>
+            @if ($signature2['name'])
+                <div class="sig-name">{{ $signature2['name'] }}</div>
+            @endif
+            @if ($signature2['designation'])
+                <div class="sig-role">{{ $signature2['designation'] }}</div>
+            @endif
+        </div>
+    </div>
+
+    <div class="footer-meta">
+        <span>Issued {{ optional($certificate->generated_at)->format('F j, Y') ?: now()->format('F j, Y') }}</span>
+        <span>{{ $verifyUrl }}</span>
     </div>
 </body>
 </html>

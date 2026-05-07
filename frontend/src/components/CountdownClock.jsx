@@ -1,36 +1,35 @@
 import { useCountdown } from '../hooks/useCountdown'
 
-function Cell({ label, value }) {
-  return (
-    <div className="rounded-lg bg-white/10 px-3 py-2 text-center min-w-[70px] backdrop-blur-sm">
-      <div className="text-2xl font-bold text-white tabular-nums">
-        {String(value).padStart(2, '0')}
-      </div>
-      <div className="mt-1 text-[11px] uppercase tracking-wider text-accent-300">
-        {label}
-      </div>
-    </div>
-  )
-}
+export default function CountdownClock({ target, className = '', tone = 'light' }) {
+  const t = useCountdown(target)
+  const isDark = tone === 'dark'
+  const cellBg = isDark ? 'bg-white/10 ring-1 ring-white/20 text-white' : 'bg-ink-50 ring-1 ring-ink-100 text-ink-900'
+  const numCls = isDark ? 'text-white' : 'text-ink-900'
+  const labelCls = isDark ? 'text-white/70' : 'text-ink-500'
 
-export default function CountdownClock({ targetDate }) {
-  const t = useCountdown(targetDate)
-  if (!t) return null
-
-  if (t.expired) {
-    return (
-      <div className="inline-flex items-center rounded-lg bg-accent-400 px-4 py-2 text-sm font-semibold text-brand-900">
-        Race day is here!
-      </div>
-    )
+  if (!t) {
+    return <div className={`text-sm ${labelCls}`}>—</div>
   }
 
+  const items = [
+    { label: 'Days', value: t.days },
+    { label: 'Hours', value: t.hours },
+    { label: 'Minutes', value: t.minutes },
+    { label: 'Seconds', value: t.seconds },
+  ]
+
   return (
-    <div className="flex flex-wrap gap-2">
-      <Cell label="Days" value={t.days} />
-      <Cell label="Hrs" value={t.hours} />
-      <Cell label="Min" value={t.minutes} />
-      <Cell label="Sec" value={t.seconds} />
+    <div className={`grid grid-cols-4 gap-2 sm:gap-3 ${className}`}>
+      {items.map((it) => (
+        <div key={it.label} className={`rounded-xl ${cellBg} px-2 py-3 text-center sm:px-4`}>
+          <div className={`font-display text-2xl font-bold tabular-nums sm:text-3xl ${numCls}`}>
+            {String(it.value).padStart(2, '0')}
+          </div>
+          <div className={`mt-1 text-[10px] font-semibold uppercase tracking-widest ${labelCls}`}>
+            {it.label}
+          </div>
+        </div>
+      ))}
     </div>
   )
 }

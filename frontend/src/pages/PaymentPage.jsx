@@ -1,182 +1,161 @@
-import { useEffect, useState } from 'react'
-import { useLocation, useNavigate } from 'react-router-dom'
-import { paymentsApi } from '../api/endpoints'
+import { useEffect, useMemo, useState } from 'react'
+import { Link, useLocation, useNavigate, useParams } from 'react-router-dom'
+import { eventsApi, paymentsApi } from '../api/endpoints'
 import { pickErrorMessage } from '../api/client'
-import { formatCurrency } from '../utils/format'
-import { useCountdown } from '../hooks/useCountdown'
 
 export default function PaymentPage() {
+  const { participantId } = useParams()
   const navigate = useNavigate()
   const { state } = useLocation()
-  const participant = state?.participant
-  const fee = state?.fee
-
+  const event = state?.event
+  const registration = state?.registration
   const [gateway, setGateway] = useState('bkash')
+  const [phase, setPhase] = useState('select')
+  const [error, setError] = useState(null)
   const [transaction, setTransaction] = useState(null)
-  const [error, setError] = useState('')
-  const [busy, setBusy] = useState(false)
-  const [step, setStep] = useState(participant ? 'choose-gateway' : 'no-state')
 
-  const countdown = useCountdown(state?.holdExpiresAt)
+  const fee = useMemo(() => registration?.fee ?? null, [registration])
 
   useEffect(() => {
-    if (!participant) {
-      setStep('no-state')
+    if (!registration) {
+      navigate('/events', { replace: true })
     }
-  }, [participant])
+  }, [registration, navigate])
 
-  const initiate = async () => {
-    setError('')
-    setBusy(true)
+  const startPayment = async () => {
+    setPhase('initiating')
+    setError(null)
     try {
-      const { data } = await paymentsApi.initiate({ participant_id: participant.id, gateway })
-      setTransaction(data?.data)
-      setStep('confirm')
+      const res = await eventsApi.initiatePayment(event.slug, {
+        participant_id: Number(participantId),
+        gateway,
+      })
+      setTransaction(res.data?.data)
+      setPhase('confirm')
     } catch (err) {
       setError(pickErrorMessage(err))
-    } finally {
-      setBusy(false)
+      setPhase('select')
     }
   }
 
-  const finalise = async (outcome) => {
-    setError('')
-    setBusy(true)
+  const confirm = async (outcome) => {
+    setPhase('confirming')
+    setError(null)
     try {
-      const { data } = await paymentsApi.confirm({
+      const res = await paymentsApi.confirm({
         transaction_id: transaction.transaction_id,
         outcome,
-        gateway_reference: outcome === 'success' ? `${gateway.toUpperCase()}-MOCK-${Date.now()}` : null,
-        payer_phone: participant.phone,
+        gateway_reference: outcome === 'success' ? `MOCK-${transaction.transaction_id.slice(-6)}` : null,
+        payer_phone: '+8801700000000',
       })
-      if (outcome === 'success') {
+      const participant = res.data?.data?.participant
+      if (outcome === 'success' && participant?.bib_number) {
         navigate('/payment/success', {
-          state: {
-            participant: data?.data?.participant,
-            payment: data?.data?.payment,
-          },
+          state: { participant, event },
+          replace: true,
         })
       } else {
-        setStep('failed')
+        setError('Payment failed. Please retry — your slot is held until the timer expires.')
+        setPhase('select')
       }
     } catch (err) {
       setError(pickErrorMessage(err))
-    } finally {
-      setBusy(false)
+      setPhase('confirm')
     }
   }
 
-  if (step === 'no-state') {
-    return (
-      <div className="mx-auto max-w-2xl px-4 py-20 text-center">
-        <h1 className="text-3xl">No active registration</h1>
-        <p className="mt-3 text-slate-600">Please start the registration form first.</p>
-        <a href="/register" className="btn-primary mt-6 inline-flex">Go to registration</a>
-      </div>
-    )
-  }
+  if (!registration) return null
 
   return (
-    <div className="mx-auto max-w-3xl px-4 py-14">
-      <h1 className="text-3xl">Complete your payment</h1>
+    <div className="bg-ink-50 py-20">
+      <div className="mx-auto max-w-3xl px-6 lg:px-8">
+        <div className="card-elevated overflow-hidden">
+          <div className="bg-ink-950 p-8 text-white">
+            <span className="pill bg-white/10 text-white">Checkout</span>
+            <h1 className="mt-3 font-display text-2xl font-bold">{event?.title}</h1>
+            <p className="mt-1 text-sm text-white/75">{event?.location}</p>
+          </div>
+          <div className="grid gap-8 p-8 sm:grid-cols-[1.2fr_1fr]">
+            <div>
+              <h3 className="text-xs font-semibold uppercase tracking-widest text-ink-500">Runner</h3>
+              <div className="mt-2 font-display text-xl font-bold text-ink-900">
+                {registration.participant.full_name}
+              </div>
+              <div className="mt-0.5 text-sm capitalize text-ink-600">{registration.participant.category}</div>
 
-      {countdown && !countdown.expired && (
-        <p className="mt-2 text-sm text-slate-500">
-          Slot held for{' '}
-          <span className="font-medium text-brand-900">
-            {countdown.minutes}m {String(countdown.seconds).padStart(2, '0')}s
-          </span>
-        </p>
-      )}
+              <h3 className="mt-6 text-xs font-semibold uppercase tracking-widest text-ink-500">Pay with</h3>
+              <div className="mt-2 grid gap-2 sm:grid-cols-2">
+                {['bkash', 'nagad'].map((g) => (
+                  <button
+                    key={g}
+                    type="button"
+                    disabled={phase !== 'select'}
+                    onClick={() => setGateway(g)}
+                    className={`rounded-2xl border-2 px-4 py-3 text-left text-sm font-semibold transition ${
+                      gateway === g
+                        ? 'border-brand-500 bg-brand-50 text-brand-700'
+                        : 'border-ink-200 bg-white text-ink-700 hover:border-ink-300'
+                    }`}
+                  >
+                    <div className="text-xs uppercase tracking-widest text-ink-500">Wallet</div>
+                    <div className="mt-1">{g === 'bkash' ? 'bKash' : 'Nagad'}</div>
+                  </button>
+                ))}
+              </div>
 
-      <div className="card mt-6 p-6">
-        <h3 className="text-lg">Order summary</h3>
-        <dl className="mt-3 grid gap-2 sm:grid-cols-2 text-sm">
-          <div>
-            <dt className="text-slate-500">Runner</dt>
-            <dd className="font-medium">{participant.full_name}</dd>
+              {error && (
+                <div className="mt-4 rounded-xl bg-rose-50 px-4 py-3 text-sm text-rose-700 ring-1 ring-rose-100">{error}</div>
+              )}
+
+              <div className="mt-6 flex flex-wrap gap-3">
+                {phase === 'select' && (
+                  <button onClick={startPayment} className="btn-primary">
+                    Start payment
+                  </button>
+                )}
+                {phase === 'initiating' && <button disabled className="btn-primary">Connecting…</button>}
+                {phase === 'confirm' && (
+                  <>
+                    <button onClick={() => confirm('success')} className="btn-primary">
+                      I paid — confirm
+                    </button>
+                    <button onClick={() => confirm('failure')} className="btn-outline">
+                      Cancel payment
+                    </button>
+                  </>
+                )}
+                {phase === 'confirming' && <button disabled className="btn-primary">Confirming…</button>}
+                <Link to={`/events/${event?.slug}`} className="btn-outline">Back</Link>
+              </div>
+            </div>
+
+            <div className="rounded-2xl bg-ink-50 p-6 ring-1 ring-ink-100">
+              <h3 className="text-xs font-semibold uppercase tracking-widest text-ink-500">Order summary</h3>
+              <dl className="mt-3 space-y-2 text-sm">
+                <Row k="Category" v={registration.participant.category} />
+                <Row k="Hold expires" v={registration.hold_expires_at ? new Date(registration.hold_expires_at).toLocaleTimeString() : '—'} />
+                <div className="my-3 h-px bg-ink-200" />
+                <Row k="Total" v={`৳ ${fee?.amount ?? '—'}`} bold />
+              </dl>
+              {transaction && (
+                <div className="mt-4 rounded-lg bg-white p-3 ring-1 ring-ink-100 text-xs text-ink-700">
+                  <div className="font-mono text-[11px] text-ink-500">Txn</div>
+                  <div className="font-mono">{transaction.transaction_id}</div>
+                </div>
+              )}
+            </div>
           </div>
-          <div>
-            <dt className="text-slate-500">Category</dt>
-            <dd className="capitalize">{participant.category}</dd>
-          </div>
-          <div>
-            <dt className="text-slate-500">University ID</dt>
-            <dd>{participant.university_id}</dd>
-          </div>
-          <div>
-            <dt className="text-slate-500">Amount due</dt>
-            <dd className="text-brand-900 font-bold">{formatCurrency(fee)}</dd>
-          </div>
-        </dl>
+        </div>
       </div>
+    </div>
+  )
+}
 
-      {step === 'choose-gateway' && (
-        <div className="card mt-6 p-6">
-          <h3 className="text-lg">Choose payment method</h3>
-          <div className="mt-4 grid gap-3 sm:grid-cols-2">
-            {[
-              { id: 'bkash', label: 'bKash', color: 'bg-pink-50 text-pink-700' },
-              { id: 'nagad', label: 'Nagad', color: 'bg-orange-50 text-orange-700' },
-            ].map((g) => (
-              <button
-                key={g.id}
-                type="button"
-                onClick={() => setGateway(g.id)}
-                className={`rounded-lg border-2 p-4 text-left transition ${
-                  gateway === g.id ? 'border-brand-700' : 'border-slate-200 hover:border-brand-100'
-                }`}
-              >
-                <div className={`inline-flex rounded-md px-2 py-1 text-xs font-semibold ${g.color}`}>{g.label}</div>
-                <p className="mt-2 text-sm text-slate-600">
-                  Pay using your {g.label} account. This is a simulated checkout for the demo.
-                </p>
-              </button>
-            ))}
-          </div>
-          {error && <div className="mt-4 rounded-md bg-rose-50 px-4 py-3 text-sm text-rose-700">{error}</div>}
-          <button onClick={initiate} disabled={busy} className="btn-primary mt-5 w-full sm:w-auto">
-            {busy ? 'Connecting…' : `Continue with ${gateway === 'bkash' ? 'bKash' : 'Nagad'}`}
-          </button>
-        </div>
-      )}
-
-      {step === 'confirm' && transaction && (
-        <div className="card mt-6 p-6">
-          <h3 className="text-lg">Simulated {transaction.gateway === 'bkash' ? 'bKash' : 'Nagad'} checkout</h3>
-          <p className="mt-2 text-sm text-slate-600">
-            Transaction ID: <span className="font-mono text-brand-900">{transaction.transaction_id}</span>
-          </p>
-          <p className="mt-1 text-sm text-slate-600">
-            Amount: <span className="font-semibold">{formatCurrency(transaction.amount)}</span>
-          </p>
-          {error && <div className="mt-4 rounded-md bg-rose-50 px-4 py-3 text-sm text-rose-700">{error}</div>}
-          <div className="mt-5 flex flex-wrap gap-3">
-            <button onClick={() => finalise('success')} disabled={busy} className="btn-primary">
-              {busy ? 'Processing…' : 'Confirm payment (success)'}
-            </button>
-            <button onClick={() => finalise('failure')} disabled={busy} className="btn-danger">
-              {busy ? 'Processing…' : 'Simulate failure'}
-            </button>
-          </div>
-          <p className="mt-3 text-xs text-slate-500">
-            In production these buttons would be replaced by the real bKash/Nagad redirect flow.
-          </p>
-        </div>
-      )}
-
-      {step === 'failed' && (
-        <div className="card mt-6 p-6">
-          <h3 className="text-lg text-rose-700">Payment did not go through</h3>
-          <p className="mt-2 text-sm text-slate-600">
-            Your slot is still on hold. You can retry the payment below or come back to this page within the next few minutes.
-          </p>
-          <div className="mt-5 flex flex-wrap gap-3">
-            <button onClick={() => setStep('choose-gateway')} className="btn-primary">Try again</button>
-            <a href="/register" className="btn-outline">Start over</a>
-          </div>
-        </div>
-      )}
+function Row({ k, v, bold }) {
+  return (
+    <div className="flex items-center justify-between gap-4">
+      <dt className="text-ink-500 capitalize">{k}</dt>
+      <dd className={`text-ink-900 ${bold ? 'font-display text-xl font-bold' : 'font-medium'}`}>{v}</dd>
     </div>
   )
 }

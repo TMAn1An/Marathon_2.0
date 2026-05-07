@@ -6,23 +6,24 @@ use App\Http\Controllers\Controller;
 use App\Services\CertificateService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use RuntimeException;
 use Symfony\Component\HttpFoundation\Response;
 
 class CertificateController extends Controller
 {
     public function __construct(protected CertificateService $certificates) {}
 
-    /**
-     * GET /api/certificates/lookup?query=...
-     * Confirms whether a certificate is available for a phone or BIB number.
-     */
     public function lookup(Request $request): JsonResponse
     {
         $request->validate([
             'query' => ['required', 'string', 'max:50'],
+            'event_id' => ['nullable', 'integer'],
         ]);
 
-        $participant = $this->certificates->findEligible($request->string('query'));
+        $participant = $this->certificates->findEligible(
+            $request->string('query'),
+            $request->integer('event_id') ?: null,
+        );
 
         if (! $participant) {
             return response()->json([
@@ -30,7 +31,13 @@ class CertificateController extends Controller
             ], 404);
         }
 
-        $certificate = $this->certificates->getOrCreate($participant);
+        try {
+            $certificate = $this->certificates->getOrCreate($participant);
+        } catch (RuntimeException $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+            ], 423);
+        }
 
         return response()->json([
             'data' => [
@@ -40,15 +47,17 @@ class CertificateController extends Controller
                     'bib_number' => $participant->bib_number,
                     'category' => $participant->category,
                 ],
+                'event' => $participant->event ? [
+                    'title' => $participant->event->title,
+                    'slug' => $participant->event->slug,
+                    'event_date' => $participant->event->event_date?->toIso8601String(),
+                    'status' => $participant->event->status,
+                ] : null,
                 'certificate_uuid' => $certificate->certificate_uuid,
             ],
         ]);
     }
 
-    /**
-     * GET /api/certificates/{uuid}/download
-     * Streams the rendered PDF certificate to the requester.
-     */
     public function download(string $uuid): Response
     {
         $participant = $this->certificates->verify($uuid);
@@ -56,20 +65,23 @@ class CertificateController extends Controller
             abort(404, 'Certificate not found.');
         }
 
-        $pdf = $this->certificates->renderPdf($participant);
-        $filename = 'iubat-marathon-certificate-' . ($participant->bib_number ?? $participant->id) . '.pdf';
+        try {
+            $pdf = $this->certificates->renderPdf($participant);
+        } catch (RuntimeException $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+            ], 423);
+        }
+
+        $filename = 'iubat-scse-marathon-certificate-'
+            .($participant->bib_number ?? $participant->id).'.pdf';
 
         return response($pdf, 200, [
             'Content-Type' => 'application/pdf',
-            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+            'Content-Disposition' => 'attachment; filename="'.$filename.'"',
         ]);
     }
 
-    /**
-     * GET /api/certificates/{uuid}/verify
-     * Public verification endpoint linked from the QR code on the
-     * certificate. Returns participant summary only (no contact details).
-     */
     public function verify(string $uuid): JsonResponse
     {
         $participant = $this->certificates->verify($uuid);
@@ -86,8 +98,8 @@ class CertificateController extends Controller
                 'full_name' => $participant->full_name,
                 'bib_number' => $participant->bib_number,
                 'category' => $participant->category,
-                'event' => config('marathon.event.name'),
-                'event_date' => config('marathon.event.date'),
+                'event' => $participant->event?->title,
+                'event_date' => $participant->event?->event_date?->toIso8601String(),
             ],
         ]);
     }

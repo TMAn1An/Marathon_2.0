@@ -43,4 +43,14 @@ class Admin extends Authenticatable
     {
         return $this->role === self::ROLE_SUPER_ADMIN;
     }
+
+    public function isAdmin(): bool
+    {
+        return $this->role === self::ROLE_ADMIN || $this->isSuperAdmin();
+    }
+
+    public function posts()
+    {
+        return $this->hasMany(Post::class);
+    }
 }

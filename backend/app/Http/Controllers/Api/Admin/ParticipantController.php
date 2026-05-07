@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\UpdateParticipantRequest;
+use App\Models\Event;
 use App\Models\Participant;
 use App\Models\Payment;
 use App\Services\BibService;
@@ -19,13 +20,11 @@ class ParticipantController extends Controller
         protected NotificationService $notifications,
     ) {}
 
-    /**
-     * GET /api/admin/participants
-     * Paginated list with category/status/search filters.
-     */
-    public function index(Request $request): JsonResponse
+    public function index(Event $event, Request $request): JsonResponse
     {
-        $query = Participant::query()->with('latestPayment');
+        $query = Participant::query()
+            ->where('event_id', $event->id)
+            ->with('latestPayment');
 
         if ($category = $request->string('category')->toString()) {
             $query->where('category', $category);
@@ -50,7 +49,7 @@ class ParticipantController extends Controller
 
     public function show(Participant $participant): JsonResponse
     {
-        $participant->load(['payments', 'certificate', 'notifications']);
+        $participant->load(['payments', 'certificate', 'notifications', 'event']);
 
         return response()->json([
             'data' => $participant,
@@ -76,10 +75,6 @@ class ParticipantController extends Controller
         ]);
     }
 
-    /**
-     * POST /api/admin/participants/{participant}/verify-payment
-     * Manual payment verification from the admin dashboard.
-     */
     public function verifyPayment(Participant $participant): JsonResponse
     {
         $payment = $participant->payments()->where('status', Payment::STATUS_PENDING)->latest()->first();
@@ -101,13 +96,12 @@ class ParticipantController extends Controller
         ]);
     }
 
-    /**
-     * GET /api/admin/participants/export
-     * Streams the participant list as CSV.
-     */
-    public function export(Request $request): StreamedResponse
+    public function export(Event $event, Request $request): StreamedResponse
     {
-        $query = Participant::query()->with('latestPayment');
+        $query = Participant::query()
+            ->where('event_id', $event->id)
+            ->with('latestPayment');
+
         if ($category = $request->string('category')->toString()) {
             $query->where('category', $category);
         }
@@ -115,7 +109,7 @@ class ParticipantController extends Controller
             $query->where('status', $status);
         }
 
-        $filename = 'participants-' . now()->format('Ymd-His') . '.csv';
+        $filename = 'participants-'.$event->slug.'-'.now()->format('Ymd-His').'.csv';
         $headers = [
             'Content-Type' => 'text/csv',
             'Content-Disposition' => "attachment; filename=\"{$filename}\"",
@@ -124,9 +118,10 @@ class ParticipantController extends Controller
         return response()->stream(function () use ($query) {
             $out = fopen('php://output', 'w');
             fputcsv($out, [
-                'BIB', 'Full Name', 'University ID', 'Category', 'Phone',
-                'Email', 'Emergency Contact', 'T-shirt Size', 'Status',
-                'Payment Status', 'Amount', 'Confirmed At',
+                'BIB', 'Full Name', 'University ID', 'Category', 'Gender',
+                'Department', 'Phone', 'Email', 'Emergency Contact',
+                'T-shirt Size', 'Status', 'Payment Status', 'Amount',
+                'Chip Time', 'Overall Place', 'Gender Place', 'Confirmed At',
             ]);
 
             $query->orderBy('id')->chunk(200, function ($rows) use ($out) {
@@ -137,6 +132,8 @@ class ParticipantController extends Controller
                         $p->full_name,
                         $p->university_id,
                         $p->category,
+                        $p->gender,
+                        $p->department,
                         $p->phone,
                         $p->email,
                         $p->emergency_contact,
@@ -144,6 +141,9 @@ class ParticipantController extends Controller
                         $p->status,
                         $payment?->status,
                         $payment?->amount,
+                        $p->chip_time,
+                        $p->overall_place,
+                        $p->gender_place,
                         optional($p->confirmed_at)->toDateTimeString(),
                     ]);
                 }

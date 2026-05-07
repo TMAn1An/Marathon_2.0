@@ -22,6 +22,9 @@ class NotificationController extends Controller
         $data = $request->validated();
         $query = Participant::query();
 
+        if (! empty($data['event_id'])) {
+            $query->where('event_id', $data['event_id']);
+        }
         if (! empty($data['category'])) {
             $query->where('category', $data['category']);
         }

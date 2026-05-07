@@ -16,7 +16,7 @@ class VolunteerSeeder extends Seeder
 
         $rows = [
             ['name' => 'Dr. Aisha Rahman', 'role' => 'Race Director',         'bio' => 'Faculty lead — owns overall planning and execution.', 'photo_url' => $portrait(5)],
-            ['name' => 'Tanvir Ahmed',     'role' => 'Course Marshal Lead',  'bio' => 'Coordinates the on-course volunteer team across the 10K loop.', 'photo_url' => $portrait(33)],
+            ['name' => 'Tanvir Ahmed',     'role' => 'Course Marshal Lead',  'bio' => 'Coordinates the on-course volunteer team across the campus loop.', 'photo_url' => $portrait(33)],
             ['name' => 'Nusrat Jahan',     'role' => 'Volunteer Coordinator','bio' => 'Recruits, schedules and trains all 60+ event-day volunteers.', 'photo_url' => $portrait(48)],
             ['name' => 'Imran Hossain',    'role' => 'Logistics Lead',       'bio' => 'BIB pickup, race-pack distribution and hydration logistics.', 'photo_url' => $portrait(15)],
             ['name' => 'Sadia Karim',      'role' => 'Medical Liaison',      'bio' => 'On-site medical and first-aid coordination with our health partner.', 'photo_url' => $portrait(45)],

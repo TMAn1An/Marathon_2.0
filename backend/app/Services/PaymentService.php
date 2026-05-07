@@ -20,10 +20,16 @@ class PaymentService
      */
     public function calculateFee(Participant $participant): int
     {
-        return (int) config(
-            "marathon.fees.{$participant->category}",
-            (int) config('marathon.fees.student', 0)
-        );
+        $event = $participant->event ?? \App\Models\Event::query()->find($participant->event_id);
+        if (! $event) {
+            return (int) config('marathon.event_defaults.student_fee_bdt');
+        }
+
+        return match ($participant->category) {
+            Participant::CATEGORY_FACULTY => $event->faculty_fee_bdt,
+            Participant::CATEGORY_GUEST => 0,
+            default => $event->student_fee_bdt,
+        };
     }
 
     /**

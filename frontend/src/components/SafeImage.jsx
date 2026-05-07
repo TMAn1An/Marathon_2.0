@@ -1,39 +1,16 @@
 import { useState } from 'react'
 
-/**
- * Renders an <img> tag with a guaranteed placeholder fallback if the
- * remote URL fails to load. Default fallback is a neutral
- * placehold.co tile sized to match the requested dimensions.
- *
- * Usage:
- *   <SafeImage src={s.logo} alt={`${s.name} logo`} width={240} height={120} />
- */
-export default function SafeImage({
-  src,
-  alt = '',
-  width,
-  height,
-  className = '',
-  fallbackText,
-  ...rest
-}) {
-  const [errored, setErrored] = useState(false)
+const FALLBACK = 'https://placehold.co/800x600/0f1118/ffffff?text=IUBAT+SCSE'
 
-  const dims = width && height ? `${width}x${height}` : '300x300'
-  const fallbackUrl = `https://placehold.co/${dims}/edf2f7/0d723c?text=${encodeURIComponent(
-    fallbackText || alt || 'Image',
-  )}`
-
-  const finalSrc = !src || errored ? fallbackUrl : src
-
+export default function SafeImage({ src, alt = '', fallback = FALLBACK, className = '', ...rest }) {
+  const [resolved, setResolved] = useState(src || fallback)
   return (
     <img
-      src={finalSrc}
+      src={resolved}
       alt={alt}
-      width={width}
-      height={height}
       loading="lazy"
-      onError={() => setErrored(true)}
+      decoding="async"
+      onError={() => setResolved(fallback)}
       className={className}
       {...rest}
     />
