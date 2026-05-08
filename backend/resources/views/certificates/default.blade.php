@@ -242,8 +242,8 @@
 
     <div class="description">
         for completing the <strong>{{ $event?->title ?? $platformName }}</strong>
-        @if ($event?->event_date)
-            held on {{ $event->event_date->format('F j, Y') }}
+        @if ($event?->event_start_date)
+            held on {{ $event->event_start_date->format('F j, Y') }}
         @endif
         @if ($event?->location)
             at <strong>{{ $event->location }}</strong>

@@ -3,10 +3,10 @@ import SafeImage from './SafeImage'
 const FALLBACK_SPONSORS = [
   { name: 'Robi', logo: 'https://placehold.co/240x80/ffffff/0f1118?text=Robi' },
   { name: 'Grameenphone', logo: 'https://placehold.co/240x80/ffffff/0f1118?text=GP' },
-  { name: 'bKash', logo: 'https://placehold.co/240x80/ffffff/ED1C24?text=bKash' },
+  { name: 'bKash', logo: 'https://placehold.co/240x80/ffffff/8b0000?text=bKash' },
   { name: 'Daraz', logo: 'https://placehold.co/240x80/ffffff/0f1118?text=Daraz' },
   { name: 'Pathao', logo: 'https://placehold.co/240x80/ffffff/0f1118?text=Pathao' },
-  { name: 'Foodpanda', logo: 'https://placehold.co/240x80/ffffff/cf131c?text=foodpanda' },
+  { name: 'Foodpanda', logo: 'https://placehold.co/240x80/ffffff/8b0000?text=foodpanda' },
   { name: 'Walton', logo: 'https://placehold.co/240x80/ffffff/0f1118?text=Walton' },
   { name: 'Apex', logo: 'https://placehold.co/240x80/ffffff/0f1118?text=Apex' },
 ]

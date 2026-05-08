@@ -2,25 +2,17 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { motion, useScroll, useTransform } from 'framer-motion'
 import { eventsApi, postsApi, sponsorsApi } from '../api/endpoints'
-import { fadeUp, staggerContainer } from '../components/Section'
 import { Section } from '../components/Section'
 import CountdownClock from '../components/CountdownClock'
 import Donut from '../components/Donut'
 import SponsorMarquee from '../components/SponsorMarquee'
 import SafeImage from '../components/SafeImage'
 import AnimatedCounter from '../components/AnimatedCounter'
+import BenefitsWithIcons from '../components/BenefitsWithIcons'
+import HomeGallery from '../components/HomeGallery'
 
 const HERO_VIDEO = 'https://cdn.coverr.co/videos/coverr-runners-on-the-park-track-2218/1080p.mp4'
 const HERO_POSTER = 'https://images.unsplash.com/photo-1530143584546-02191bc84eb5?auto=format&fit=crop&w=1920&q=70'
-
-const BENEFITS = [
-  { title: 'Timing chip & BIB', text: 'Real-time chip timing with a digital BIB on a premium tear-free bib.', img: 'https://picsum.photos/seed/bib/420/420' },
-  { title: 'Performance T-shirt', text: 'Moisture-wicking IUBAT SCSE finisher tee, sized to fit.', img: 'https://picsum.photos/seed/tshirt/420/420' },
-  { title: 'Verified certificate', text: 'A QR-verified, A4-landscape certificate generated the moment results land.', img: 'https://picsum.photos/seed/cert/420/420' },
-  { title: 'Hydration on course', text: 'Three hydration stations with electrolyte refresher and chilled water.', img: 'https://picsum.photos/seed/water/420/420' },
-  { title: 'Finisher medal', text: 'A heavyweight, ribbon-mounted medal for every finisher.', img: 'https://picsum.photos/seed/medal/420/420' },
-  { title: 'Recovery breakfast', text: 'A post-race breakfast spread served at the IUBAT Atrium.', img: 'https://picsum.photos/seed/breakfast/420/420' },
-]
 
 const TESTIMONIALS = [
   {
@@ -72,13 +64,14 @@ export default function HomePage() {
     <>
       <Hero featured={featured} y={heroY} opacity={heroOpacity} />
 
-      <TrustBar />
+      <SponsorBand sponsors={sponsors} />
+
+      <BenefitsWithIcons />
 
       {analytics && (
         <Section
           eyebrow="Live registration analytics"
           title="A transparent view of who's running"
-          intro="Public dashboards never leak raw slot counts — just a clean breakdown of how each segment is filling up."
         >
           <div className="mx-auto max-w-3xl rounded-3xl bg-white p-6 shadow-card ring-1 ring-ink-100 sm:p-10">
             <Donut segments={analytics.segments} note={analytics.note} />
@@ -86,7 +79,13 @@ export default function HomePage() {
         </Section>
       )}
 
-      <Benefits />
+      <Section
+        eyebrow="Moments from past races"
+        title="Inside the IUBAT SCSE MINI Marathon"
+        intro="Tap any photo to view it full-screen."
+      >
+        <HomeGallery />
+      </Section>
 
       <SocialProof />
 
@@ -105,7 +104,7 @@ export default function HomePage() {
               key={p.id}
               className={`group relative overflow-hidden rounded-2xl ring-1 ring-white/10 transition hover:-translate-y-1 ${
                 p.post_type === 'announcement'
-                  ? 'bg-brand-500'
+                  ? 'bg-crimson-700'
                   : p.post_type === 'event_update'
                   ? 'bg-ink-900'
                   : 'bg-white text-ink-900'
@@ -121,17 +120,13 @@ export default function HomePage() {
                 <p className={`mt-3 text-sm ${p.post_type === 'general' ? 'text-ink-600' : 'text-white/85'}`}>
                   {p.excerpt}
                 </p>
-                <span className={`mt-auto pt-6 text-sm font-semibold ${p.post_type === 'general' ? 'text-brand-600' : 'text-white'}`}>
+                <span className={`mt-auto pt-6 text-sm font-semibold ${p.post_type === 'general' ? 'text-crimson-700' : 'text-white'}`}>
                   Read more →
                 </span>
               </Link>
             </article>
           ))}
         </div>
-      </Section>
-
-      <Section eyebrow="Our supporters" title="Sponsors & partners" intro="Backed by brands that share our belief in active campus life.">
-        <SponsorMarquee sponsors={sponsors} />
       </Section>
 
       <FinalCta featured={featured} />
@@ -141,9 +136,9 @@ export default function HomePage() {
 
 function Hero({ featured, y, opacity }) {
   return (
-    <section className="relative isolate -mt-20 flex min-h-[92vh] items-center overflow-hidden bg-ink-950 pt-28 text-white">
+    <section className="relative isolate -mt-20 flex min-h-[94vh] items-center overflow-hidden bg-brand-950 pt-28 text-white">
       <video
-        className="absolute inset-0 h-full w-full object-cover opacity-50"
+        className="absolute inset-0 h-full w-full object-cover opacity-40"
         src={HERO_VIDEO}
         poster={HERO_POSTER}
         autoPlay
@@ -153,11 +148,11 @@ function Hero({ featured, y, opacity }) {
         preload="metadata"
       />
       <div className="absolute inset-0 bg-hero-gradient" />
-      <div className="absolute inset-0 bg-gradient-to-t from-ink-950 via-transparent to-transparent" />
+      <div className="absolute inset-0 bg-gradient-to-t from-brand-950 via-transparent to-transparent" />
 
       <motion.div
         style={{ y, opacity }}
-        className="relative z-10 mx-auto grid w-full max-w-7xl gap-10 px-6 lg:grid-cols-[1.2fr_1fr] lg:px-8"
+        className="relative z-10 mx-auto grid w-full max-w-7xl gap-10 px-6 lg:grid-cols-[1.1fr_1fr] lg:px-8"
       >
         <div>
           <motion.span
@@ -177,7 +172,7 @@ function Hero({ featured, y, opacity }) {
           >
             Run with knowledge.
             <br />
-            <span className="bg-gradient-to-r from-brand-300 via-brand-400 to-brand-600 bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-sun-300 via-sun-400 to-sun-500 bg-clip-text text-transparent">
               Finish with pride.
             </span>
           </motion.h1>
@@ -187,8 +182,8 @@ function Hero({ featured, y, opacity }) {
             transition={{ delay: 0.32, duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
             className="mt-6 max-w-xl text-base text-white/80 sm:text-lg"
           >
-            A multi-event running platform built and operated by the IUBAT School of Computer Science &amp;
-            Engineering. Premium chip timing, instant certificates, and a campus that turns out to cheer.
+            The flagship campus run hosted by the IUBAT School of Computer Science &amp; Engineering.
+            Premium chip timing, instant verified certificates, and a campus that turns out to cheer.
           </motion.p>
           <motion.div
             initial={{ opacity: 0, y: 18 }}
@@ -206,92 +201,108 @@ function Hero({ featured, y, opacity }) {
           </motion.div>
         </div>
 
-        {featured && (
-          <motion.div
-            initial={{ opacity: 0, y: 32 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.5, duration: 0.8 }}
-            className="self-end"
-          >
-            <div className="rounded-3xl bg-white/8 p-6 ring-1 ring-white/15 backdrop-blur-xl sm:p-8">
-              <span className="text-xs font-semibold uppercase tracking-[0.18em] text-white/70">Next up</span>
-              <h3 className="mt-2 font-display text-2xl font-bold leading-tight">{featured.title}</h3>
-              <p className="mt-2 text-sm text-white/70">{featured.location}</p>
-              <div className="mt-6">
-                <CountdownClock target={featured.event_date} tone="dark" />
-              </div>
-              <Link
-                to={`/events/${featured.slug}`}
-                className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-white"
-              >
-                View details
-                <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M5 12h14M13 5l7 7-7 7" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-              </Link>
-            </div>
-          </motion.div>
-        )}
+        {featured && <FeaturedEventCard featured={featured} />}
       </motion.div>
     </section>
   )
 }
 
-function TrustBar() {
+function FeaturedEventCard({ featured }) {
+  const eventTarget = featured.event_start_date
+  const regTarget = featured.registration_start_date
+  const [regStarted, setRegStarted] = useState(() => {
+    if (!regTarget) return true
+    return new Date(regTarget).getTime() <= Date.now()
+  })
+
+  useEffect(() => {
+    if (!regTarget) {
+      setRegStarted(true)
+      return undefined
+    }
+    const targetMs = new Date(regTarget).getTime()
+    const tick = () => setRegStarted(Date.now() >= targetMs)
+    tick()
+    const id = setInterval(tick, 1000)
+    return () => clearInterval(id)
+  }, [regTarget])
+
   return (
-    <div className="bg-white">
-      <div className="mx-auto flex max-w-7xl flex-col items-center gap-6 px-6 py-10 text-center lg:flex-row lg:justify-between lg:px-8 lg:text-left">
-        <div className="flex items-center gap-4">
-          <img src="https://placehold.co/96x96/ED1C24/ffffff?text=IUBAT&font=playfair" alt="IUBAT logo" className="h-12 w-12 rounded-xl ring-1 ring-ink-200" />
-          <img src="https://placehold.co/96x96/0f1118/ffffff?text=SCSE" alt="SCSE logo" className="h-12 w-12 rounded-xl ring-1 ring-ink-200" />
-          <div>
-            <div className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-600">
-              Officially organised by
+    <motion.div
+      initial={{ opacity: 0, y: 32 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.4, duration: 0.7 }}
+      className="self-center"
+    >
+      <div className="rounded-3xl bg-white/10 p-6 ring-1 ring-white/15 backdrop-blur-xl sm:p-7">
+        <div className="flex items-center justify-between">
+          <span className="text-[11px] font-semibold uppercase tracking-[0.2em] text-sun-300">
+            Next up
+          </span>
+          {featured.status === 'live' && (
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-crimson-700 px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest text-white">
+              <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-sun-400" />
+              Live
+            </span>
+          )}
+        </div>
+        <h3 className="mt-2 font-display text-2xl font-bold leading-tight">{featured.title}</h3>
+        <p className="mt-1 text-sm text-white/70">{featured.location}</p>
+
+        {!regStarted && regTarget && (
+          <div className="mt-5">
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-white/70">
+                Registration opens in
+              </span>
+              <span className="text-[11px] font-mono text-sun-300">
+                {new Date(regTarget).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}
+              </span>
             </div>
-            <div className="font-display text-base font-bold text-ink-900">
-              IUBAT · School of Computer Science &amp; Engineering
-            </div>
+            <CountdownClock target={regTarget} tone="dark" className="mt-2" />
           </div>
-        </div>
-        <div className="flex items-center gap-8 text-sm font-medium text-ink-600">
-          <span className="flex items-center gap-2"><span className="h-1.5 w-1.5 rounded-full bg-brand-500" /> Chip timing</span>
-          <span className="flex items-center gap-2"><span className="h-1.5 w-1.5 rounded-full bg-brand-500" /> Verified certificates</span>
-          <span className="flex items-center gap-2"><span className="h-1.5 w-1.5 rounded-full bg-brand-500" /> Multi-event platform</span>
-        </div>
+        )}
+
+        {eventTarget && (
+          <div className="mt-5">
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-white/70">
+                Event starts in
+              </span>
+              <span className="text-[11px] font-mono text-sun-300">
+                {new Date(eventTarget).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}
+              </span>
+            </div>
+            <CountdownClock target={eventTarget} tone="dark" className="mt-2" />
+            <p className="mt-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-sun-400">
+              Reporting time: 5:00 AM
+            </p>
+          </div>
+        )}
+
+        <Link
+          to={`/events/${featured.slug}`}
+          className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-white"
+        >
+          View details
+          <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M5 12h14M13 5l7 7-7 7" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </Link>
       </div>
-    </div>
+    </motion.div>
   )
 }
 
-function Benefits() {
+function SponsorBand({ sponsors }) {
   return (
     <Section
-      eyebrow="What you get"
-      title="Premium kit, instant feedback, real glory"
-      intro="Every participant gets a curated runner kit and a digital paper trail that lasts beyond race day."
+      eyebrow="Powered by our sponsors"
+      title="Backed by brands that believe in active campuses"
     >
-      <motion.div
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true, margin: '-80px' }}
-        variants={staggerContainer}
-        className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3"
-      >
-        {BENEFITS.map((b) => (
-          <motion.div
-            key={b.title}
-            variants={fadeUp}
-            transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
-            className="group relative overflow-hidden rounded-3xl bg-white p-6 ring-1 ring-ink-100 transition hover:-translate-y-1 hover:shadow-card"
-          >
-            <div className="relative aspect-[5/3] overflow-hidden rounded-2xl">
-              <SafeImage src={b.img} alt={b.title} className="h-full w-full object-cover transition duration-700 group-hover:scale-105" />
-            </div>
-            <h3 className="mt-5 font-display text-lg font-semibold text-ink-900">{b.title}</h3>
-            <p className="mt-2 text-sm text-ink-600">{b.text}</p>
-          </motion.div>
-        ))}
-      </motion.div>
+      <div className="rounded-3xl bg-white p-8 shadow-card ring-1 ring-ink-100 sm:p-10">
+        <SponsorMarquee sponsors={sponsors} />
+      </div>
     </Section>
   )
 }
@@ -350,7 +361,7 @@ function UrgencyBlock({ featured }) {
   if (!featured) return null
   return (
     <Section className="!bg-brand-50">
-      <div className="grid items-center gap-10 rounded-3xl bg-gradient-to-br from-ink-950 via-brand-700 to-ink-950 p-10 text-white shadow-card lg:grid-cols-2 lg:p-14">
+      <div className="grid items-center gap-10 rounded-3xl bg-gradient-to-br from-brand-950 via-brand-700 to-brand-900 p-10 text-white shadow-card lg:grid-cols-2 lg:p-14">
         <div>
           <span className="pill bg-white/10 text-white">Reservation closing soon</span>
           <h3 className="mt-4 font-display text-3xl font-bold sm:text-4xl">
@@ -365,9 +376,12 @@ function UrgencyBlock({ featured }) {
           </Link>
         </div>
         <div>
-          <CountdownClock target={featured.event_date} tone="dark" />
+          <CountdownClock target={featured.event_start_date} tone="dark" />
           <p className="mt-4 text-xs uppercase tracking-widest text-white/60">
-            Race day · {new Date(featured.event_date).toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' })}
+            Race day · {new Date(featured.event_start_date).toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' })}
+          </p>
+          <p className="mt-1 text-xs uppercase tracking-widest text-sun-300">
+            Reporting time: 5:00 AM
           </p>
         </div>
       </div>
@@ -377,7 +391,7 @@ function UrgencyBlock({ featured }) {
 
 function FinalCta({ featured }) {
   return (
-    <section className="relative isolate overflow-hidden bg-ink-950 py-24 text-white">
+    <section className="relative isolate overflow-hidden bg-brand-950 py-24 text-white">
       <div className="absolute inset-0 bg-grid-fade opacity-60" />
       <div className="relative mx-auto max-w-3xl px-6 text-center lg:px-8">
         <motion.h2

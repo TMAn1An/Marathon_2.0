@@ -24,7 +24,7 @@ class EventController extends Controller
 
         $events = Event::query()
             ->orderByRaw("CASE status WHEN 'live' THEN 1 WHEN 'upcoming' THEN 2 ELSE 3 END")
-            ->orderBy('event_date')
+            ->orderBy('event_start_date')
             ->get()
             ->map(fn (Event $e) => $this->summary($e));
 
@@ -145,8 +145,8 @@ class EventController extends Controller
             'hero_image_url' => $event->hero_image_path
                 ? asset('storage/'.$event->hero_image_path)
                 : null,
-            'event_date' => $event->event_date?->toIso8601String(),
-            'registration_unlock_at' => $event->registration_unlock_at?->toIso8601String(),
+            'event_start_date' => $event->event_start_date?->toIso8601String(),
+            'registration_start_date' => $event->registration_start_date?->toIso8601String(),
             'total_slots' => $event->total_slots,
             'guest_slot_limit' => $event->guest_slot_limit,
             'hold_minutes' => $event->hold_minutes,

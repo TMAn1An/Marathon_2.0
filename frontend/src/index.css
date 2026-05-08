@@ -20,32 +20,32 @@
   }
 
   ::selection {
-    @apply bg-brand-500/90 text-white;
+    @apply bg-crimson-700 text-white;
   }
 }
 
 @layer components {
-  /* ===== Buttons ===== */
+  /* ===== Buttons (dark red CTAs — 30%) ===== */
   .btn {
     @apply inline-flex items-center justify-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold tracking-tight transition focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:opacity-60 disabled:cursor-not-allowed;
   }
   .btn-primary {
-    @apply btn bg-brand-500 text-white shadow-glow hover:bg-brand-600 hover:-translate-y-0.5 focus-visible:ring-brand-500;
+    @apply btn bg-crimson-700 text-white shadow-glow hover:bg-crimson-800 hover:-translate-y-0.5 focus-visible:ring-crimson-700;
   }
   .btn-cta {
-    @apply btn px-7 py-3 text-base bg-brand-500 text-white shadow-glow hover:bg-brand-600 hover:-translate-y-0.5 focus-visible:ring-brand-500;
+    @apply btn px-7 py-3 text-base bg-crimson-700 text-white shadow-glow hover:bg-crimson-800 hover:-translate-y-0.5 focus-visible:ring-crimson-700;
   }
   .btn-outline {
-    @apply btn border border-ink-200 bg-white text-ink-900 hover:border-brand-500 hover:text-brand-600 focus-visible:ring-brand-500;
+    @apply btn border border-ink-200 bg-white text-ink-900 hover:border-crimson-700 hover:text-crimson-700 focus-visible:ring-crimson-700;
   }
   .btn-ghost {
     @apply btn border border-white/30 bg-white/10 text-white backdrop-blur hover:bg-white hover:text-ink-900 focus-visible:ring-white;
   }
   .btn-danger {
-    @apply btn bg-rose-600 text-white hover:bg-rose-500 focus-visible:ring-rose-400;
+    @apply btn bg-crimson-700 text-white hover:bg-crimson-800 focus-visible:ring-crimson-700;
   }
 
-  /* ===== Form fields ===== */
+  /* ===== Form fields (green focus = brand surface — 60%) ===== */
   .input {
     @apply block w-full rounded-xl border border-ink-200 bg-white px-3.5 py-2.5 text-sm shadow-sm transition focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/30;
   }
@@ -61,24 +61,25 @@
     @apply rounded-3xl bg-white shadow-card ring-1 ring-ink-100;
   }
 
-  /* ===== Pills / Badges ===== */
+  /* ===== Pills / Badges (yellow & green for content; crimson for live) ===== */
   .pill {
     @apply inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold;
   }
   .pill-brand { @apply pill bg-brand-50 text-brand-700; }
   .pill-ink { @apply pill bg-ink-100 text-ink-700; }
-  .pill-live { @apply pill bg-brand-500 text-white; }
-  .pill-upcoming { @apply pill bg-ink-900 text-white; }
+  .pill-live { @apply pill bg-crimson-700 text-white; }
+  .pill-upcoming { @apply pill bg-brand-700 text-white; }
   .pill-past { @apply pill bg-ink-100 text-ink-700; }
+  .pill-accent { @apply pill bg-sun-100 text-sun-800; }
 
   /* Glass nav blur */
   .glass-nav {
     @apply backdrop-blur-xl backdrop-saturate-150;
-    background: rgba(255, 255, 255, 0.72);
+    background: rgba(255, 255, 255, 0.78);
   }
   .glass-nav-dark {
     @apply backdrop-blur-xl backdrop-saturate-150;
-    background: rgba(15, 17, 24, 0.6);
+    background: rgba(5, 49, 30, 0.65);
   }
 
   /* Quill editor surface */
@@ -120,11 +121,11 @@
   }
   .live-dot::after {
     content: '';
-    @apply absolute inset-0 rounded-full bg-brand-500 animate-ping opacity-75;
+    @apply absolute inset-0 rounded-full bg-crimson-700 animate-ping opacity-75;
   }
   .live-dot::before {
     content: '';
-    @apply absolute inset-0 rounded-full bg-brand-500;
+    @apply absolute inset-0 rounded-full bg-crimson-700;
   }
 
   /* Skeleton loader */

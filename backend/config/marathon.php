@@ -30,9 +30,9 @@ return [
 
     'registration' => [
         // Global lock — registration form stays hidden until this date even if
-        // an event has registration_unlock_at unset. Admin can override per
+        // an event has registration_start_date unset. Admin can override per
         // event by setting status = live.
-        'global_unlock_at' => env('MARATHON_REGISTRATION_UNLOCK_AT', '2026-07-02 00:00:00'),
+        'global_unlock_at' => env('MARATHON_REGISTRATION_UNLOCK_AT', '2026-05-20 00:00:00'),
         'timezone' => env('MARATHON_TIMEZONE', 'Asia/Dhaka'),
     ],
 

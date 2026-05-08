@@ -23,11 +23,11 @@ class DashboardController extends Controller
         } else {
             $event = Event::query()
                 ->orderByRaw("CASE status WHEN 'live' THEN 1 WHEN 'upcoming' THEN 2 ELSE 3 END")
-                ->orderBy('event_date')
+                ->orderBy('event_start_date')
                 ->first();
         }
 
-        $events = Event::query()->orderBy('event_date', 'desc')->get(['id', 'title', 'slug', 'status', 'event_date']);
+        $events = Event::query()->orderBy('event_start_date', 'desc')->get(['id', 'title', 'slug', 'status', 'event_start_date', 'registration_start_date']);
 
         $participantStats = $event ? $this->participantStats($event) : null;
         $paymentStats = $event ? $this->paymentStats($event) : null;

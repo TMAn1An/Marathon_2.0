@@ -6,7 +6,6 @@ const NAV = [
   { to: '/', label: 'Home' },
   { to: '/events', label: 'Events' },
   { to: '/news', label: 'News' },
-  { to: '/gallery', label: 'Gallery' },
   { to: '/certificate', label: 'Certificate' },
   { to: '/about', label: 'About' },
 ]
@@ -39,13 +38,13 @@ export default function Navbar() {
       <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-3 lg:px-8">
         <Link to="/" className="flex items-center gap-3">
           <img
-            src="https://placehold.co/96x96/ED1C24/ffffff?text=IUBAT&font=playfair"
-            alt="IUBAT logo"
-            className="h-9 w-9 rounded-lg ring-1 ring-ink-200"
-            loading="lazy"
+            src="/brand/icmm-2026.jpg"
+            alt="ICMM 2026 — IUBAT SCSE MINI Marathon"
+            className="h-11 w-auto rounded-md object-contain"
+            loading="eager"
           />
           <div className="hidden flex-col leading-none sm:flex">
-            <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-brand-600">
+            <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-brand-700">
               IUBAT SCSE
             </span>
             <span className="font-display text-base font-bold text-ink-900">MINI Marathon</span>
@@ -61,7 +60,7 @@ export default function Navbar() {
               className={({ isActive }) =>
                 `relative rounded-full px-4 py-2 text-sm font-medium transition ${
                   isActive
-                    ? 'text-brand-600'
+                    ? 'text-crimson-700'
                     : 'text-ink-700 hover:text-ink-900'
                 }`
               }
@@ -83,13 +82,13 @@ export default function Navbar() {
         </nav>
 
         <div className="hidden items-center gap-3 lg:flex">
-          <img
-            src="https://placehold.co/96x96/0f1118/ffffff?text=RUN"
-            alt="Marathon mark"
-            className="h-9 w-9 rounded-lg ring-1 ring-ink-200"
-            loading="lazy"
-          />
           <Link to="/events" className="btn-primary">Register</Link>
+          <img
+            src="/brand/iubat-logo.png"
+            alt="IUBAT logo"
+            className="h-11 w-auto object-contain"
+            loading="eager"
+          />
         </div>
 
         <button
@@ -118,7 +117,7 @@ export default function Navbar() {
                   end={n.to === '/'}
                   className={({ isActive }) =>
                     `block rounded-xl px-4 py-3 text-sm font-medium ${
-                      isActive ? 'bg-brand-50 text-brand-700' : 'text-ink-800 hover:bg-ink-50'
+                      isActive ? 'bg-brand-50 text-crimson-700' : 'text-ink-800 hover:bg-ink-50'
                     }`
                   }
                 >
@@ -126,8 +125,9 @@ export default function Navbar() {
                 </NavLink>
               </li>
             ))}
-            <li>
-              <Link to="/events" className="btn-primary mt-2 w-full">Register</Link>
+            <li className="flex items-center gap-3 px-2 pt-3">
+              <img src="/brand/iubat-logo.png" alt="IUBAT logo" className="h-9 w-auto object-contain" />
+              <Link to="/events" className="btn-primary flex-1 justify-center">Register</Link>
             </li>
           </ul>
         </div>

@@ -23,8 +23,8 @@ class Event extends Model
         'description',
         'location',
         'hero_image_path',
-        'event_date',
-        'registration_unlock_at',
+        'event_start_date',
+        'registration_start_date',
         'total_slots',
         'guest_slot_limit',
         'hold_minutes',
@@ -36,8 +36,8 @@ class Event extends Model
     ];
 
     protected $casts = [
-        'event_date' => 'datetime',
-        'registration_unlock_at' => 'datetime',
+        'event_start_date' => 'datetime',
+        'registration_start_date' => 'datetime',
         'manual_override' => 'boolean',
         'is_visible' => 'boolean',
         'total_slots' => 'integer',
@@ -84,7 +84,7 @@ class Event extends Model
 
     public function registrationOpensAt(): Carbon
     {
-        return $this->registration_unlock_at ?? $this->event_date;
+        return $this->registration_start_date ?? $this->event_start_date;
     }
 
     public function registrationOpen(): bool

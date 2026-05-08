@@ -39,7 +39,7 @@ class ParticipantSeeder extends Seeder
                     'emergency_contact' => '+8801800000000',
                     'tshirt_size' => ['S', 'M', 'L', 'XL'][$i % 4],
                     'status' => Participant::STATUS_CONFIRMED,
-                    'confirmed_at' => $past->event_date,
+                    'confirmed_at' => $past->event_start_date,
                     'chip_time' => $time,
                     'overall_place' => $i + 1,
                     'gender_place' => floor($i / 2) + 1,

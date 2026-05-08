@@ -29,7 +29,7 @@ class EventInfoController extends Controller
     {
         $events = Event::query()
             ->where('is_visible', true)
-            ->orderBy('event_date')
+            ->orderBy('event_start_date')
             ->get();
 
         $grouped = [
@@ -109,7 +109,8 @@ class EventInfoController extends Controller
             'hero_image_url' => $event->hero_image_path
                 ? asset('storage/'.$event->hero_image_path)
                 : null,
-            'event_date' => $event->event_date?->toIso8601String(),
+            'event_start_date' => $event->event_start_date?->toIso8601String(),
+            'registration_start_date' => $event->registration_start_date?->toIso8601String(),
             'status' => $event->status,
             'student_fee_bdt' => $event->student_fee_bdt,
             'faculty_fee_bdt' => $event->faculty_fee_bdt,

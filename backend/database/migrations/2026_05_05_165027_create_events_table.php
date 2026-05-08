@@ -16,8 +16,8 @@ return new class extends Migration
             $table->longText('description')->nullable();
             $table->string('location', 180)->nullable();
             $table->string('hero_image_path')->nullable();
-            $table->dateTime('event_date');
-            $table->dateTime('registration_unlock_at')->nullable();
+            $table->dateTime('event_start_date');
+            $table->dateTime('registration_start_date')->nullable();
             $table->unsignedInteger('total_slots')->default(400);
             $table->unsignedInteger('guest_slot_limit')->default(30);
             $table->unsignedInteger('hold_minutes')->default(10);
@@ -29,7 +29,7 @@ return new class extends Migration
             $table->timestamps();
 
             $table->index('status');
-            $table->index('event_date');
+            $table->index('event_start_date');
         });
     }
 

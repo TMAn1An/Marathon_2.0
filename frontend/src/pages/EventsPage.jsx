@@ -108,7 +108,7 @@ function EventCard({ event, tone }) {
       <div className="flex items-center justify-between gap-3 p-5">
         <div>
           <div className="text-xs font-semibold uppercase tracking-widest text-ink-500">
-            {new Date(event.event_date).toLocaleString('en-GB', {
+            {new Date(event.event_start_date).toLocaleString('en-GB', {
               day: '2-digit',
               month: 'short',
               year: 'numeric',

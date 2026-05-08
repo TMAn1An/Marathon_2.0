@@ -35,7 +35,7 @@ export default function EventDetailPage() {
   const targetDate = useMemo(() => {
     if (!event || !status) return null
     if (status.is_locked) return status.unlocks_at
-    return event.event_date
+    return event.event_start_date
   }, [event, status])
 
   if (loading) {
@@ -74,7 +74,7 @@ export default function EventDetailPage() {
                 ? `Registration unlocks ${new Date(status.unlocks_at).toLocaleString('en-GB')}`
                 : isPast
                 ? 'Event has concluded'
-                : `Race day · ${new Date(event.event_date).toLocaleDateString('en-GB')}`}
+                : `Race day · ${new Date(event.event_start_date).toLocaleDateString('en-GB')}`}
             </p>
           </div>
           <div className="mt-8 flex flex-wrap gap-3">

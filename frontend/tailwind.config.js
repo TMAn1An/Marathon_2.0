@@ -4,19 +4,46 @@ export default {
   theme: {
     extend: {
       colors: {
-        // IUBAT SCSE MINI Marathon — primary brand red #ED1C24.
+        // 60% surface — deep professional green
         brand: {
-          50: '#fff1f2',
-          100: '#ffe1e3',
-          200: '#ffc6cb',
-          300: '#ff9aa3',
-          400: '#fb6470',
-          500: '#ED1C24',
-          600: '#cf131c',
-          700: '#a90f17',
-          800: '#7d0c12',
-          900: '#570a10',
-          950: '#2c0307',
+          50: '#ecfdf3',
+          100: '#d1fadf',
+          200: '#a7f3c4',
+          300: '#6fe6a3',
+          400: '#34d27a',
+          500: '#0e7d4a',
+          600: '#0a6a3f',
+          700: '#085a35',
+          800: '#08442a',
+          900: '#05311e',
+          950: '#021a10',
+        },
+        // 30% — dark, rich red for buttons / active links / accents
+        crimson: {
+          50: '#fdf3f3',
+          100: '#fbe4e4',
+          200: '#f6c5c5',
+          300: '#ed9595',
+          400: '#dd5757',
+          500: '#b51d1d',
+          600: '#990000',
+          700: '#8b0000',
+          800: '#6c0202',
+          900: '#4a0000',
+          950: '#2a0000',
+        },
+        // 10% — vibrant yellow for badges / highlights
+        sun: {
+          50: '#fffbe6',
+          100: '#fff5c2',
+          200: '#ffe982',
+          300: '#ffd74a',
+          400: '#facc15',
+          500: '#e0b30a',
+          600: '#b88a04',
+          700: '#92670a',
+          800: '#785010',
+          900: '#5e3d10',
         },
         ink: {
           50: '#f6f7f9',
@@ -39,14 +66,14 @@ export default {
       },
       boxShadow: {
         soft: '0 10px 40px -16px rgba(15, 23, 42, 0.18)',
-        glow: '0 14px 38px -14px rgba(237, 28, 36, 0.55)',
+        glow: '0 14px 38px -14px rgba(139, 0, 0, 0.55)',
         card: '0 18px 60px -22px rgba(15, 23, 42, 0.30)',
       },
       backgroundImage: {
         'grid-fade':
-          'radial-gradient(circle at 50% 0%, rgba(237,28,36,0.12), transparent 60%), radial-gradient(circle at 0% 100%, rgba(15,23,42,0.10), transparent 50%)',
+          'radial-gradient(circle at 50% 0%, rgba(14,125,74,0.14), transparent 60%), radial-gradient(circle at 0% 100%, rgba(8,68,42,0.10), transparent 50%)',
         'hero-gradient':
-          'linear-gradient(135deg, rgba(15,17,24,0.85) 0%, rgba(237,28,36,0.55) 50%, rgba(15,17,24,0.85) 100%)',
+          'linear-gradient(135deg, rgba(5,49,30,0.92) 0%, rgba(8,68,42,0.85) 55%, rgba(139,0,0,0.55) 100%)',
       },
       animation: {
         'spin-slow': 'spin 18s linear infinite',
@@ -64,8 +91,8 @@ export default {
           '100%': { opacity: 1, transform: 'translate3d(0, 0, 0)' },
         },
         pulseGlow: {
-          '0%, 100%': { boxShadow: '0 0 0 0 rgba(237,28,36,0.45)' },
-          '50%': { boxShadow: '0 0 0 14px rgba(237,28,36,0)' },
+          '0%, 100%': { boxShadow: '0 0 0 0 rgba(139,0,0,0.50)' },
+          '50%': { boxShadow: '0 0 0 14px rgba(139,0,0,0)' },
         },
       },
     },

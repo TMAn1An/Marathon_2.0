@@ -8,8 +8,10 @@ Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote');
 
-// Auto-transition events to "past" status every 10 minutes once their date has
-// passed (admin manual_override is respected).
+// Auto-transition events every minute:
+//  - upcoming → live when event_start_date is reached
+//  - live → past 24h later
+// (admin manual_override is respected.)
 Schedule::command('marathon:auto-transition-events')
-    ->everyTenMinutes()
+    ->everyMinute()
     ->withoutOverlapping();

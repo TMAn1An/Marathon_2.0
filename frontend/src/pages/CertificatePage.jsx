@@ -96,7 +96,7 @@ export default function CertificatePage() {
                   <div className="text-xs uppercase tracking-widest text-ink-500">Event</div>
                   <div className="font-semibold text-ink-900">{result.event.title}</div>
                   <div className="text-xs text-ink-500">
-                    {new Date(result.event.event_date).toLocaleDateString('en-GB', { dateStyle: 'long' })}
+                    {new Date(result.event.event_start_date).toLocaleDateString('en-GB', { dateStyle: 'long' })}
                   </div>
                 </div>
               </div>

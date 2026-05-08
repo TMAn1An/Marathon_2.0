@@ -50,7 +50,7 @@ class CertificateController extends Controller
                 'event' => $participant->event ? [
                     'title' => $participant->event->title,
                     'slug' => $participant->event->slug,
-                    'event_date' => $participant->event->event_date?->toIso8601String(),
+                    'event_start_date' => $participant->event->event_start_date?->toIso8601String(),
                     'status' => $participant->event->status,
                 ] : null,
                 'certificate_uuid' => $certificate->certificate_uuid,
@@ -99,7 +99,7 @@ class CertificateController extends Controller
                 'bib_number' => $participant->bib_number,
                 'category' => $participant->category,
                 'event' => $participant->event?->title,
-                'event_date' => $participant->event?->event_date?->toIso8601String(),
+                'event_start_date' => $participant->event?->event_start_date?->toIso8601String(),
             ],
         ]);
     }

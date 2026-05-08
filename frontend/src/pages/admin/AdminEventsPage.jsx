@@ -11,8 +11,8 @@ const EMPTY_EVENT = {
   summary: '',
   description: '',
   location: '',
-  event_date: '',
-  registration_unlock_at: '',
+  event_start_date: '',
+  registration_start_date: '',
   total_slots: 400,
   guest_slot_limit: 30,
   hold_minutes: 10,
@@ -89,7 +89,12 @@ export default function AdminEventsPage() {
                   <div className="font-display font-semibold text-ink-900">{e.title}</div>
                   <div className="text-xs text-ink-500">{e.slug}</div>
                 </td>
-                <td className="px-6 py-4 text-ink-700">{new Date(e.event_date).toLocaleString('en-GB')}</td>
+                <td className="px-6 py-4 text-ink-700">
+                  <div>{e.event_start_date ? new Date(e.event_start_date).toLocaleString('en-GB') : '—'}</div>
+                  <div className="text-xs text-ink-500">
+                    Reg opens: {e.registration_start_date ? new Date(e.registration_start_date).toLocaleString('en-GB') : '—'}
+                  </div>
+                </td>
                 <td className="px-6 py-4">
                   <StatusPill status={e.status} override={e.manual_override} />
                 </td>
@@ -147,8 +152,8 @@ function EventDrawer({ event, onClose, onSaved, onError }) {
   const isEdit = Boolean(event.id)
   const [form, setForm] = useState(() => ({
     ...event,
-    event_date: event.event_date ? new Date(event.event_date).toISOString().slice(0, 16) : '',
-    registration_unlock_at: event.registration_unlock_at ? new Date(event.registration_unlock_at).toISOString().slice(0, 16) : '',
+    event_start_date: event.event_start_date ? new Date(event.event_start_date).toISOString().slice(0, 16) : '',
+    registration_start_date: event.registration_start_date ? new Date(event.registration_start_date).toISOString().slice(0, 16) : '',
   }))
   const [busy, setBusy] = useState(false)
 
@@ -166,8 +171,8 @@ function EventDrawer({ event, onClose, onSaved, onError }) {
         hold_minutes: Number(form.hold_minutes),
         student_fee_bdt: Number(form.student_fee_bdt),
         faculty_fee_bdt: Number(form.faculty_fee_bdt),
-        event_date: new Date(form.event_date).toISOString(),
-        registration_unlock_at: form.registration_unlock_at ? new Date(form.registration_unlock_at).toISOString() : null,
+        event_start_date: new Date(form.event_start_date).toISOString(),
+        registration_start_date: form.registration_start_date ? new Date(form.registration_start_date).toISOString() : null,
       }
       if (isEdit) await adminApi.updateEvent(event.id, payload)
       else await adminApi.createEvent(payload)
@@ -190,8 +195,8 @@ function EventDrawer({ event, onClose, onSaved, onError }) {
           <Field label="Summary"><textarea rows={2} className="input" required value={form.summary} onChange={update('summary')} /></Field>
           <Field label="Description (HTML allowed)"><textarea rows={4} className="input font-mono text-xs" value={form.description} onChange={update('description')} /></Field>
           <div className="grid gap-4 sm:grid-cols-2">
-            <Field label="Event date"><input type="datetime-local" className="input" required value={form.event_date} onChange={update('event_date')} /></Field>
-            <Field label="Registration unlock"><input type="datetime-local" className="input" value={form.registration_unlock_at} onChange={update('registration_unlock_at')} /></Field>
+            <Field label="Event start date"><input type="datetime-local" className="input" required value={form.event_start_date} onChange={update('event_start_date')} /></Field>
+            <Field label="Registration start date"><input type="datetime-local" className="input" value={form.registration_start_date} onChange={update('registration_start_date')} /></Field>
             <Field label="Total slots"><input type="number" className="input" required value={form.total_slots} onChange={update('total_slots')} /></Field>
             <Field label="Guest slot limit"><input type="number" className="input" required value={form.guest_slot_limit} onChange={update('guest_slot_limit')} /></Field>
             <Field label="Hold minutes"><input type="number" className="input" required value={form.hold_minutes} onChange={update('hold_minutes')} /></Field>

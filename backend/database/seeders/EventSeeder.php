@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\CertificateTemplate;
 use App\Models\Event;
+use Carbon\Carbon;
 use Illuminate\Database\Seeder;
 
 class EventSeeder extends Seeder
@@ -18,6 +19,9 @@ class EventSeeder extends Seeder
             'faculty_fee_bdt' => (int) config('marathon.event_defaults.faculty_fee_bdt'),
         ];
 
+        $eventDay = Carbon::create(2026, 7, 2, 5, 45, 0, 'Asia/Dhaka');
+        $registrationUnlock = Carbon::create(2026, 5, 20, 0, 0, 0, 'Asia/Dhaka');
+
         $events = [
             [
                 'title' => 'IUBAT SCSE MINI Marathon — Edition 2026',
@@ -25,8 +29,8 @@ class EventSeeder extends Seeder
                 'summary' => 'Run with knowledge, finish with pride. The flagship campus run for IUBAT students, faculty and friends of the SCSE community.',
                 'description' => "<p>The IUBAT School of Computer Science &amp; Engineering invites runners of every level to its 2026 mini marathon. Expect a scenic 5K loop around the Uttara campus, BIB-timed results, finisher T-shirts and certificates rendered live by our event engine.</p><p>Slots are limited &mdash; secure yours when registration unlocks.</p>",
                 'location' => 'IUBAT Main Campus, Uttara, Dhaka',
-                'event_date' => now()->copy()->addMonths(8)->setTime(7, 0),
-                'registration_unlock_at' => now()->copy()->addDays(20),
+                'event_start_date' => $eventDay,
+                'registration_start_date' => $registrationUnlock,
                 'status' => Event::STATUS_UPCOMING,
             ],
             [
@@ -35,8 +39,8 @@ class EventSeeder extends Seeder
                 'summary' => 'A live community fun-run streaming today from the IUBAT track — cheer on your favourite runner.',
                 'description' => "<p>Live race coverage. Real-time results posted as runners cross the line.</p>",
                 'location' => 'IUBAT Athletic Track, Uttara',
-                'event_date' => now()->copy()->subHours(2),
-                'registration_unlock_at' => now()->copy()->subWeeks(2),
+                'event_start_date' => now()->copy()->subHours(2),
+                'registration_start_date' => now()->copy()->subWeeks(2),
                 'status' => Event::STATUS_LIVE,
                 'manual_override' => true,
             ],
@@ -46,8 +50,8 @@ class EventSeeder extends Seeder
                 'summary' => 'Last year&rsquo;s SCSE community run — relive the highlights and download your certificate.',
                 'description' => "<p>Three hundred and seventy-two finishers, two hundred volunteers, one unforgettable morning.</p>",
                 'location' => 'IUBAT Main Campus, Uttara, Dhaka',
-                'event_date' => now()->copy()->subYear(),
-                'registration_unlock_at' => now()->copy()->subYear()->subWeeks(4),
+                'event_start_date' => now()->copy()->subYear(),
+                'registration_start_date' => now()->copy()->subYear()->subWeeks(4),
                 'status' => Event::STATUS_PAST,
                 'manual_override' => true,
             ],
@@ -62,7 +66,7 @@ class EventSeeder extends Seeder
             CertificateTemplate::updateOrCreate(
                 ['event_id' => $event->id],
                 [
-                    'primary_color' => '#ED1C24',
+                    'primary_color' => '#0e7d4a',
                     'signature_1_name' => 'Prof. Dr. Utpal Kanti Das',
                     'signature_1_designation' => 'Chairman, School of CSE',
                     'signature_2_name' => 'Md. Imran Hossain',
