@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { eventApi } from '../api/endpoints'
+import { useEvent } from '../context/EventContext'
 
 export default function RegistrationInfoPage() {
   const [info, setInfo] = useState(null)
+  const { totalSlots, holdMinutes } = useEvent()
 
   useEffect(() => {
     eventApi.info().then(({ data }) => setInfo(data?.data)).catch(() => {})
@@ -15,8 +17,8 @@ export default function RegistrationInfoPage() {
     <div className="mx-auto max-w-5xl px-4 py-14">
       <h1 className="text-4xl">Registration info</h1>
       <p className="mt-3 text-slate-600 max-w-3xl">
-        Slots are first-come, first-served and capped at 400. Reserve a slot, complete payment within
-        the 10-minute hold window, and your BIB number is issued automatically on success.
+        Slots are first-come, first-served and capped at {totalSlots ?? 400}. Reserve a slot, complete payment within
+        the {holdMinutes}-minute hold window, and your BIB number is issued automatically on success.
       </p>
 
       <div className="mt-8 grid gap-6 md:grid-cols-2">
@@ -48,7 +50,7 @@ export default function RegistrationInfoPage() {
         <div className="card p-6 md:col-span-2">
           <h3 className="text-lg">How registration works</h3>
           <ol className="mt-3 space-y-3 text-sm text-slate-700 list-decimal pl-5">
-            <li>Fill out the registration form. Your slot is reserved for 10 minutes.</li>
+            <li>Fill out the registration form. Your slot is reserved for {holdMinutes} minutes.</li>
             <li>You'll be redirected to the simulated bKash/Nagad payment page.</li>
             <li>On successful payment, your BIB is generated and a confirmation is emailed to you.</li>
             <li>If payment fails, your slot is released back to the pool. You can register again.</li>

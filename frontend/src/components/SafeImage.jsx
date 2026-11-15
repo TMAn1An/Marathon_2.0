@@ -1,38 +1,34 @@
 import { useState } from 'react'
 
 /**
- * Renders an <img> tag with a guaranteed placeholder fallback if the
- * remote URL fails to load. Default fallback is a neutral
- * placehold.co tile sized to match the requested dimensions.
- *
- * Usage:
- *   <SafeImage src={s.logo} alt={`${s.name} logo`} width={240} height={120} />
+ * <img> that degrades to a neutral, self-contained placeholder tile when the
+ * source is missing or fails to load (no third-party placeholder service).
  */
-export default function SafeImage({
-  src,
-  alt = '',
-  width,
-  height,
-  className = '',
-  fallbackText,
-  ...rest
-}) {
+export default function SafeImage({ src, alt = '', width, height, className = '', fallbackText, ...rest }) {
   const [errored, setErrored] = useState(false)
 
-  const dims = width && height ? `${width}x${height}` : '300x300'
-  const fallbackUrl = `https://placehold.co/${dims}/edf2f7/0d723c?text=${encodeURIComponent(
-    fallbackText || alt || 'Image',
-  )}`
-
-  const finalSrc = !src || errored ? fallbackUrl : src
+  if (!src || errored) {
+    const label = (fallbackText || alt || '?').trim()
+    return (
+      <span
+        role="img"
+        aria-label={alt}
+        style={{ width, height }}
+        className={`inline-grid place-items-center overflow-hidden bg-brand-50 px-2 text-center text-xs font-semibold text-brand-700 ${className}`}
+      >
+        {label.length > 24 ? `${label.slice(0, 22)}…` : label}
+      </span>
+    )
+  }
 
   return (
     <img
-      src={finalSrc}
+      src={src}
       alt={alt}
       width={width}
       height={height}
       loading="lazy"
+      decoding="async"
       onError={() => setErrored(true)}
       className={className}
       {...rest}

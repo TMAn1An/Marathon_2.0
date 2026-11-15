@@ -13,20 +13,21 @@ class CertificateController extends Controller
     public function __construct(protected CertificateService $certificates) {}
 
     /**
-     * GET /api/certificates/lookup?query=...
-     * Confirms whether a certificate is available for a phone or BIB number.
+     * GET /api/certificates/lookup?bib=…&phone=…
+     * Confirms whether a certificate is available for this runner.
      */
     public function lookup(Request $request): JsonResponse
     {
-        $request->validate([
-            'query' => ['required', 'string', 'max:50'],
+        $data = $request->validate([
+            'bib' => ['required', 'string', 'max:20'],
+            'phone' => ['required', 'string', 'max:32'],
         ]);
 
-        $participant = $this->certificates->findEligible($request->string('query'));
+        $participant = $this->certificates->findEligible($data['bib'], $data['phone']);
 
         if (! $participant) {
             return response()->json([
-                'message' => 'No confirmed registration found for that phone number or BIB.',
+                'message' => 'No certificate found. Check your BIB and phone number, and note that certificates open once results are published.',
             ], 404);
         }
 
@@ -35,10 +36,10 @@ class CertificateController extends Controller
         return response()->json([
             'data' => [
                 'participant' => [
-                    'id' => $participant->id,
                     'full_name' => $participant->full_name,
                     'bib_number' => $participant->bib_number,
                     'category' => $participant->category,
+                    'finish_time' => $participant->finish_time,
                 ],
                 'certificate_uuid' => $certificate->certificate_uuid,
             ],
@@ -57,11 +58,11 @@ class CertificateController extends Controller
         }
 
         $pdf = $this->certificates->renderPdf($participant);
-        $filename = 'iubat-marathon-certificate-' . ($participant->bib_number ?? $participant->id) . '.pdf';
+        $filename = 'iubat-marathon-certificate-'.($participant->bib_number ?? $participant->id).'.pdf';
 
         return response($pdf, 200, [
             'Content-Type' => 'application/pdf',
-            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+            'Content-Disposition' => 'attachment; filename="'.$filename.'"',
         ]);
     }
 
@@ -88,6 +89,7 @@ class CertificateController extends Controller
                 'category' => $participant->category,
                 'event' => config('marathon.event.name'),
                 'event_date' => config('marathon.event.date'),
+                'finish_time' => $participant->finish_time,
             ],
         ]);
     }

@@ -12,6 +12,7 @@ class Admin extends Authenticatable
     use HasApiTokens, HasFactory, Notifiable;
 
     public const ROLE_ADMIN = 'admin';
+
     public const ROLE_SUPER_ADMIN = 'super_admin';
 
     protected $table = 'admins';

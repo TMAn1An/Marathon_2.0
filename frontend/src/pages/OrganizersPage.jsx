@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react'
 import { eventApi } from '../api/endpoints'
 import SafeImage from '../components/SafeImage'
+import { useEvent } from '../context/EventContext'
 
 export default function OrganizersPage() {
+  const { event } = useEvent()
   const [volunteers, setVolunteers] = useState([])
   const [loading, setLoading] = useState(true)
 
@@ -18,7 +20,7 @@ export default function OrganizersPage() {
       <h1 className="mt-3 text-4xl">Organizers &amp; volunteers</h1>
       <p className="mt-3 max-w-3xl text-slate-600">
         The marathon is organised by faculty, students and volunteers from the IUBAT CSE Department.
-        Want to join the volunteer team? Email <a href="mailto:marathon@iubat.edu" className="text-brand-700 underline">marathon@iubat.edu</a>.
+        Want to join the volunteer team? Email <a href={`mailto:${event.support_email}`} className="text-brand-700 underline">{event.support_email}</a>.
       </p>
 
       {loading ? (

@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>{{ $event['name'] ?? 'IUBAT CSE 10K Marathon' }} — Certificate of Participation</title>
+    <title>{{ $event['name'] ?? 'IUBAT CSE 10K Marathon' }} — Certificate of Completion</title>
     <style>
         /* A4 landscape with zero @page margin gives us a fixed 297 x 210 mm
            printable canvas. Everything below is positioned with absolute
@@ -225,7 +225,7 @@
 
     <div class="institution">{{ $event['name'] ?? 'IUBAT CSE 10K Marathon' }}</div>
 
-    <h1 class="title">Certificate of Participation</h1>
+    <h1 class="title">Certificate of Completion</h1>
     <div class="title-rule"></div>
 
     <p class="preface">This is to certify that</p>
@@ -235,7 +235,7 @@
     </div>
 
     <p class="description">
-        successfully participated in the
+        successfully completed the
         <strong>{{ $event['name'] ?? 'IUBAT CSE 10K Marathon' }}</strong>
         held on <strong>{{ $event['date'] ?? '' }}</strong>
         at <strong>{{ $event['venue'] ?? 'IUBAT Main Campus, Uttara, Dhaka' }}</strong>,
@@ -253,16 +253,16 @@
                 <span class="meta-label">Category</span>
                 <span class="meta-value">{{ ucfirst($participant->category) }}</span>
             </td>
-            @if (!empty($participant->finish_time))
+            @if (!empty($finishTime))
                 <td>
                     <span class="meta-label">Finish Time</span>
-                    <span class="meta-value">{{ $participant->finish_time }}</span>
+                    <span class="meta-value">{{ $finishTime }}</span>
                 </td>
             @endif
-            @if (!empty($participant->rank))
+            @if (!empty($rank))
                 <td>
                     <span class="meta-label">Rank</span>
-                    <span class="meta-value">#{{ $participant->rank }}</span>
+                    <span class="meta-value">#{{ $rank }}</span>
                 </td>
             @endif
             <td>

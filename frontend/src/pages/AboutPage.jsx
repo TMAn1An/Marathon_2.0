@@ -1,4 +1,7 @@
+import { useEvent } from '../context/EventContext'
+
 export default function AboutPage() {
+  const { totalSlots } = useEvent()
   return (
     <div className="mx-auto max-w-4xl px-4 py-14">
       <h1 className="text-4xl">About the marathon</h1>
@@ -20,7 +23,7 @@ export default function AboutPage() {
         <div className="card p-6">
           <h3 className="text-lg">Race format</h3>
           <p className="mt-2 text-sm text-slate-600">
-            One distance: 10&nbsp;km. Two categories: students and faculty. Capped at 400 runners
+            One distance: 10&nbsp;km. Two categories: students and faculty. Capped at {totalSlots ?? 400} runners
             so every participant gets full on-course support.
           </p>
         </div>

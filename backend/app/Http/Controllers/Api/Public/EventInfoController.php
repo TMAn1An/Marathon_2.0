@@ -19,7 +19,7 @@ class EventInfoController extends Controller
             'data' => [
                 'event' => config('marathon.event'),
                 'fees' => config('marathon.fees'),
-                'result_url' => config('marathon.event.result_url'),
+                'hold_minutes' => (int) config('marathon.slots.hold_minutes'),
             ],
         ]);
     }

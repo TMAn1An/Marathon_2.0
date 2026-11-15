@@ -16,9 +16,8 @@ class ConfirmPaymentRequest extends FormRequest
     {
         return [
             'transaction_id' => ['required', 'string', 'exists:payments,transaction_id'],
+            'participant_token' => ['required', 'string'],
             'outcome' => ['required', Rule::in(['success', 'failure'])],
-            'gateway_reference' => ['nullable', 'string', 'max:191'],
-            'payer_phone' => ['nullable', 'string', 'max:32'],
         ];
     }
 }

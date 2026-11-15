@@ -11,10 +11,13 @@ class NotificationLog extends Model
     use HasFactory;
 
     public const CHANNEL_EMAIL = 'email';
+
     public const CHANNEL_SMS = 'sms';
 
     public const STATUS_QUEUED = 'queued';
+
     public const STATUS_SENT = 'sent';
+
     public const STATUS_FAILED = 'failed';
 
     protected $table = 'notifications_log';

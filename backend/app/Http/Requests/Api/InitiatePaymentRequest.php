@@ -15,7 +15,7 @@ class InitiatePaymentRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'participant_id' => ['required', 'integer', 'exists:participants,id'],
+            'participant_token' => ['required', 'string', 'exists:participants,public_token'],
             'gateway' => ['required', Rule::in(['bkash', 'nagad'])],
         ];
     }

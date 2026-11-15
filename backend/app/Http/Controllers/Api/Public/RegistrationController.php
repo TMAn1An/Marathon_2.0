@@ -36,9 +36,9 @@ class RegistrationController extends Controller
 
         return response()->json([
             'message' => 'Slot reserved. Please complete payment within '
-                . config('marathon.slots.hold_minutes') . ' minutes.',
+                .config('marathon.slots.hold_minutes').' minutes.',
             'data' => [
-                'participant' => $participant,
+                'participant' => $participant->publicSummary(),
                 'fee' => $this->payments->calculateFee($participant),
                 'hold_expires_at' => $participant->slot_reserved_until?->toIso8601String(),
             ],

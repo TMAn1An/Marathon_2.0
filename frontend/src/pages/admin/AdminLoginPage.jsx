@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAdminAuth } from '../../context/AdminAuthContext'
 import { pickErrorMessage } from '../../api/client'
+import Alert from '../../components/Alert'
+import Logo from '../../components/Logo'
 
 export default function AdminLoginPage() {
   const { admin, login } = useAdminAuth()
@@ -31,34 +33,31 @@ export default function AdminLoginPage() {
   }
 
   return (
-    <div className="grid min-h-screen place-items-center bg-brand-900 text-white px-4">
-      <div className="w-full max-w-md rounded-2xl bg-white p-8 text-slate-800 shadow-xl">
+    <div className="hero-bg grid min-h-screen place-items-center px-4">
+      <div className="w-full max-w-md rounded-3xl bg-white p-8 text-brand-800 shadow-lift">
         <div className="text-center">
-          <span className="grid mx-auto h-12 w-12 place-items-center rounded-lg bg-brand-900 text-accent-400 font-bold">10K</span>
-          <h1 className="mt-3 text-2xl">IUBAT Marathon Admin</h1>
-          <p className="text-sm text-slate-500">Sign in to manage participants and operations.</p>
+          <div className="flex justify-center"><Logo /></div>
+          <h1 className="mt-5 text-2xl">Organizer sign in</h1>
+          <p className="mt-1 text-sm text-brand-600">Manage registrations, payments and results.</p>
         </div>
 
         <form onSubmit={onSubmit} className="mt-6 space-y-4">
           <div>
             <label className="label" htmlFor="email">Email</label>
             <input id="email" name="email" type="email" value={form.email} onChange={onChange}
-              required className="input" placeholder="admin@iubat.edu" />
+              required className="input" autoComplete="username" placeholder="you@example.com" />
           </div>
           <div>
             <label className="label" htmlFor="password">Password</label>
             <input id="password" name="password" type="password" value={form.password} onChange={onChange}
-              required className="input" placeholder="••••••••" />
+              required autoComplete="current-password" className="input" placeholder="••••••••" />
           </div>
-          {error && <div className="rounded-md bg-rose-50 px-3 py-2 text-sm text-rose-700">{error}</div>}
+          <Alert>{error}</Alert>
           <button type="submit" disabled={busy} className="btn-primary w-full">
             {busy ? 'Signing in…' : 'Sign in'}
           </button>
         </form>
 
-        <p className="mt-4 text-center text-xs text-slate-400">
-          Demo credentials: <code>admin@iubat.edu</code> / <code>admin12345</code>
-        </p>
       </div>
     </div>
   )

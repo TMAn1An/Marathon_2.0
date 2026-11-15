@@ -5,7 +5,6 @@ namespace App\Services;
 use App\Models\Certificate;
 use App\Models\Participant;
 use Barryvdh\DomPDF\Facade\Pdf;
-use Illuminate\Support\Facades\Storage;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
 class CertificateService
@@ -17,14 +16,25 @@ class CertificateService
      */
     public function getOrCreate(Participant $participant): Certificate
     {
-        if (! $participant->isConfirmed()) {
-            throw new \RuntimeException('Certificates are only available for confirmed participants.');
+        if (! $this->isEligible($participant)) {
+            throw new \RuntimeException('This participant is not eligible for a certificate.');
         }
 
         return Certificate::firstOrCreate(
             ['participant_id' => $participant->id],
             ['generated_at' => now()],
         );
+    }
+
+    /** Confirmed runners, and — by default — only those with a recorded finish. */
+    public function isEligible(Participant $participant): bool
+    {
+        if (! $participant->isConfirmed()) {
+            return false;
+        }
+
+        return ! config('marathon.certificates.require_finish')
+            || $participant->finish_time_seconds !== null;
     }
 
     /**
@@ -43,7 +53,7 @@ class CertificateService
         );
 
         $qrSvg = QrCode::format('svg')->size(160)->margin(0)->generate($verifyUrl);
-        $qrDataUri = 'data:image/svg+xml;base64,' . base64_encode($qrSvg);
+        $qrDataUri = 'data:image/svg+xml;base64,'.base64_encode($qrSvg);
 
         $pdf = Pdf::loadView('certificates.default', [
             'participant' => $participant,
@@ -51,6 +61,8 @@ class CertificateService
             'verifyUrl' => $verifyUrl,
             'qrDataUri' => $qrDataUri,
             'event' => config('marathon.event'),
+            'finishTime' => $participant->finish_time,
+            'rank' => app(ResultsService::class)->rankOf($participant),
         ])->setPaper('a4', 'landscape');
 
         $certificate->increment('download_count');
@@ -62,23 +74,25 @@ class CertificateService
     }
 
     /**
-     * Looks up a confirmed participant by phone or BIB number for the
-     * public certificate download endpoint. Returns null when not found.
+     * Finds an eligible runner by BIB *and* phone number. Requiring both
+     * stops anyone enumerating sequential BIBs to pull other people's
+     * certificates.
      */
-    public function findEligible(string $query): ?Participant
+    public function findEligible(string $bib, string $phone): ?Participant
     {
-        $query = trim($query);
-        if ($query === '') {
+        $bib = strtoupper(trim($bib));
+        $phone = preg_replace('/[\s\-]+/', '', $phone);
+        if ($bib === '' || $phone === '') {
             return null;
         }
 
-        return Participant::query()
+        $participant = Participant::query()
             ->where('status', Participant::STATUS_CONFIRMED)
-            ->where(function ($q) use ($query) {
-                $q->where('phone', $query)
-                    ->orWhere('bib_number', $query);
-            })
+            ->where('bib_number', $bib)
+            ->where('phone', $phone)
             ->first();
+
+        return $participant && $this->isEligible($participant) ? $participant : null;
     }
 
     /**

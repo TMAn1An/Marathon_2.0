@@ -1,91 +1,76 @@
 import { useState } from 'react'
-import { Link, NavLink } from 'react-router-dom'
+import { Link, NavLink, useLocation } from 'react-router-dom'
+import Logo from './Logo'
 
 const links = [
-  { to: '/', label: 'Home' },
   { to: '/about', label: 'About' },
-  { to: '/route', label: 'Route Map' },
-  { to: '/registration-info', label: 'Registration' },
-  { to: '/sponsors', label: 'Sponsors' },
-  { to: '/organizers', label: 'Organizers' },
-  { to: '/faq', label: 'FAQ' },
+  { to: '/route', label: 'Route' },
+  { to: '/registration-info', label: 'Info' },
   { to: '/results', label: 'Results' },
   { to: '/certificate', label: 'Certificate' },
+  { to: '/faq', label: 'FAQ' },
 ]
+
+const linkClass = ({ isActive }) =>
+  `rounded-full px-3.5 py-2 text-sm font-medium transition-colors duration-150 ${
+    isActive ? 'bg-brand-950 text-white' : 'text-brand-700 hover:bg-brand-900/5 hover:text-brand-950'
+  }`
 
 export default function Navbar() {
   const [open, setOpen] = useState(false)
+  const { pathname } = useLocation()
+  const [lastPath, setLastPath] = useState(pathname)
+  if (pathname !== lastPath) {
+    setLastPath(pathname)
+    setOpen(false)
+  }
 
   return (
-    <header className="sticky top-0 z-30 border-b border-brand-100 bg-white/90 backdrop-blur">
-      <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3">
-        <Link to="/" className="flex items-center gap-2">
-          <span className="grid h-9 w-9 place-items-center rounded-lg bg-brand-900 text-accent-400 font-bold">
-            10K
-          </span>
-          <span className="leading-tight">
-            <span className="block text-sm font-semibold text-brand-900">IUBAT CSE</span>
-            <span className="block text-xs text-slate-500">10K Marathon</span>
-          </span>
-        </Link>
-
-        <nav className="hidden lg:flex items-center gap-1">
-          {links.map((l) => (
-            <NavLink
-              key={l.to}
-              to={l.to}
-              end={l.to === '/'}
-              className={({ isActive }) =>
-                `rounded-md px-3 py-2 text-sm font-medium transition ${
-                  isActive
-                    ? 'bg-brand-50 text-brand-900'
-                    : 'text-slate-600 hover:bg-slate-100 hover:text-brand-900'
-                }`
-              }
-            >
-              {l.label}
-            </NavLink>
-          ))}
-        </nav>
-
-        <div className="hidden lg:flex items-center gap-2">
-          <Link to="/register" className="btn-primary">Register Now</Link>
-        </div>
-
-        <button
-          type="button"
-          className="lg:hidden rounded-md p-2 text-slate-600 hover:bg-slate-100"
-          onClick={() => setOpen((v) => !v)}
-          aria-label="Toggle menu"
-        >
-          <svg width="22" height="22" viewBox="0 0 20 20" fill="currentColor"><path d="M3 5h14v2H3zM3 9h14v2H3zM3 13h14v2H3z"/></svg>
-        </button>
-      </div>
-
-      {open && (
-        <div className="lg:hidden border-t border-slate-100 bg-white px-4 py-3 space-y-1">
-          {links.map((l) => (
-            <NavLink
-              key={l.to}
-              to={l.to}
-              end={l.to === '/'}
-              onClick={() => setOpen(false)}
-              className={({ isActive }) =>
-                `block rounded-md px-3 py-2 text-sm font-medium ${
-                  isActive
-                    ? 'bg-brand-50 text-brand-900'
-                    : 'text-slate-600 hover:bg-slate-100'
-                }`
-              }
-            >
-              {l.label}
-            </NavLink>
-          ))}
-          <Link to="/register" onClick={() => setOpen(false)} className="btn-primary w-full mt-2">
-            Register Now
+    <header className="sticky top-3 z-40 px-3">
+      <div className="mx-auto max-w-6xl rounded-full bg-white/95 px-3 py-2 shadow-lift ring-1 ring-brand-900/10 backdrop-blur-xl">
+        <div className="flex items-center justify-between gap-2 pl-2">
+          <Link to="/" aria-label="IUBAT CSE 10K Marathon — home">
+            <Logo />
           </Link>
+
+          <nav className="hidden items-center gap-0.5 lg:flex" aria-label="Main">
+            {links.map((l) => (
+              <NavLink key={l.to} to={l.to} className={linkClass}>
+                {l.label}
+              </NavLink>
+            ))}
+          </nav>
+
+          <div className="flex items-center gap-1.5">
+            <Link to="/register" className="btn-primary !px-5 !py-2">
+              Register
+            </Link>
+            <button
+              type="button"
+              className="grid h-10 w-10 place-items-center rounded-full text-brand-800 hover:bg-brand-900/5 lg:hidden"
+              onClick={() => setOpen((v) => !v)}
+              aria-label={open ? 'Close menu' : 'Open menu'}
+              aria-expanded={open}
+              aria-controls="mobile-menu"
+            >
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden>
+                {open ? <path d="M5 5l10 10M15 5L5 15" /> : <path d="M3 6h14M3 10h14M3 14h14" />}
+              </svg>
+            </button>
+          </div>
         </div>
-      )}
+
+        {open && (
+          <nav id="mobile-menu" aria-label="Mobile" className="mt-2 grid gap-1 border-t border-brand-900/10 px-1 pb-2 pt-3 lg:hidden">
+            {[{ to: '/', label: 'Home' }, ...links, { to: '/sponsors', label: 'Sponsors' }, { to: '/organizers', label: 'Organizers' }].map((l) => (
+              <NavLink key={l.to} to={l.to} end={l.to === '/'} className={({ isActive }) =>
+                `rounded-2xl px-4 py-2.5 text-sm font-medium ${isActive ? 'bg-brand-950 text-white' : 'text-brand-700 hover:bg-brand-900/5'}`}>
+                {l.label}
+              </NavLink>
+            ))}
+          </nav>
+        )}
+      </div>
     </header>
   )
 }
