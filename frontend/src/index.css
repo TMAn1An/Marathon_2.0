@@ -6,94 +6,140 @@
   html {
     font-family: 'Inter', ui-sans-serif, system-ui, sans-serif;
     -webkit-font-smoothing: antialiased;
+    scroll-behavior: smooth;
+    scroll-padding-top: 6rem; /* keeps focused/anchored content clear of the floating nav */
+  }
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
   }
 
   body {
-    @apply bg-brand-50 text-slate-800;
+    @apply bg-brand-50 text-brand-800 antialiased;
   }
 
   h1, h2, h3, h4 {
-    @apply font-display font-semibold text-brand-900;
+    @apply font-display font-bold tracking-tight text-brand-950;
+  }
+
+  ::selection {
+    @apply bg-action-300 text-brand-950;
+  }
+
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-brand-700;
   }
 }
 
 @layer components {
-  /* ===== Buttons ===== */
+  /* ===== Buttons: pill-shaped, volt primary ===== */
   .btn {
-    @apply inline-flex items-center justify-center gap-2 rounded-lg px-5 py-2.5 text-sm font-semibold transition focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-60 disabled:cursor-not-allowed;
+    @apply inline-flex items-center justify-center gap-2 rounded-full px-6 py-2.5 text-sm font-semibold transition duration-200 ease-out focus-visible:outline-2 focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:opacity-50;
   }
-
-  /* Orange = primary CTA. White text, darker orange + glow on hover. */
   .btn-primary {
-    @apply btn bg-action-500 text-white shadow-sm hover:bg-action-600 hover:shadow-glow hover:-translate-y-0.5 active:translate-y-0 focus:ring-action-400;
+    @apply btn bg-action-400 text-brand-950 shadow-sm hover:bg-action-300 hover:shadow-glow active:scale-[0.98] focus-visible:outline-action-500;
   }
-
-  /* Bigger CTA pill used in hero / final blocks. */
   .btn-cta {
-    @apply btn px-7 py-3 text-base bg-action-500 text-white shadow-md hover:bg-action-600 hover:shadow-glow hover:-translate-y-0.5 active:translate-y-0 focus:ring-action-400;
+    @apply btn px-8 py-3.5 text-base bg-action-400 text-brand-950 shadow-sm hover:bg-action-300 hover:shadow-glow active:scale-[0.98] focus-visible:outline-action-500;
   }
-
-  /* Green outline = secondary action. */
   .btn-outline {
-    @apply btn border-2 border-brand-700 text-brand-800 hover:bg-brand-700 hover:text-white focus:ring-brand-500;
+    @apply btn border border-brand-900/20 text-brand-900 hover:border-brand-900 hover:bg-brand-900 hover:text-white focus-visible:outline-brand-700;
   }
-
-  /* Light/white outline used on dark green hero backgrounds. */
   .btn-ghost {
-    @apply btn border-2 border-white/60 text-white hover:bg-white hover:text-brand-900 focus:ring-white;
+    @apply btn border border-white/25 text-white hover:bg-white/10 focus-visible:outline-white;
   }
-
   .btn-danger {
-    @apply btn bg-rose-600 text-white hover:bg-rose-500 focus:ring-rose-400;
+    @apply btn bg-rose-600 text-white hover:bg-rose-500 focus-visible:outline-rose-500;
   }
 
-  /* ===== Form fields ===== */
+  /* ===== Forms ===== */
   .input {
-    @apply block w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500;
+    @apply block w-full rounded-xl border border-brand-200 bg-white px-3.5 py-2.5 text-sm text-brand-900 shadow-sm transition placeholder:text-brand-400 focus:border-brand-700 focus:outline-none focus:ring-4 focus:ring-action-300/40;
   }
   .label {
-    @apply mb-1 block text-sm font-medium text-slate-700;
+    @apply mb-1.5 block text-sm font-medium text-brand-800;
   }
 
-  /* ===== Cards ===== */
+  /* ===== Surfaces ===== */
   .card {
-    @apply rounded-xl bg-white shadow-soft;
+    @apply rounded-2xl bg-white shadow-soft ring-1 ring-brand-900/5;
+  }
+  .card-dark {
+    @apply rounded-2xl bg-brand-900 text-brand-50 ring-1 ring-white/10;
+  }
+  .glass {
+    @apply rounded-2xl bg-white/[0.06] ring-1 ring-white/15 backdrop-blur-md;
   }
 
   /* ===== Badges ===== */
   .badge {
-    @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium;
+    @apply inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold;
   }
-  .badge-green { @apply badge bg-brand-50 text-brand-800; }
-  .badge-amber { @apply badge bg-accent-50 text-accent-800; }
-  .badge-orange { @apply badge bg-action-50 text-action-800; }
+  .badge-green { @apply badge bg-brand-100 text-brand-800; }
+  .badge-amber { @apply badge bg-action-200 text-brand-900; }
+  .badge-orange { @apply badge bg-accent-100 text-accent-800; }
   .badge-red { @apply badge bg-rose-50 text-rose-700; }
   .badge-slate { @apply badge bg-slate-100 text-slate-700; }
 
-  /* Simple shimmer for image placeholders */
-  .skeleton {
-    @apply animate-pulse bg-slate-200;
+  .eyebrow {
+    @apply inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-brand-600;
+  }
+  .eyebrow::before {
+    content: '';
+    @apply h-px w-6 bg-current;
   }
 
-  /* ===== Sponsor marquee =====
-     A right-to-left infinite scroll. Render the list twice and animate
-     the inner track by -50% so the loop is seamless. Pauses on hover so
-     the user can read individual logos. */
+  .skeleton {
+    @apply animate-pulse bg-brand-100;
+  }
+
+  /* Hero backdrop: faint grid + soft volt/forest glows (decorative). */
+  .hero-bg {
+    background-color: theme('colors.brand.950');
+    background-image:
+      radial-gradient(60rem 30rem at 85% -10%, rgb(198 240 50 / 0.18), transparent 60%),
+      radial-gradient(50rem 30rem at -10% 110%, rgb(58 85 70 / 0.65), transparent 60%),
+      linear-gradient(rgb(255 255 255 / 0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgb(255 255 255 / 0.04) 1px, transparent 1px);
+    background-size: auto, auto, 56px 56px, 56px 56px;
+  }
+
+  /* Inner pages get a soft volt glow behind the title. */
+  .page-surface {
+    background-image: radial-gradient(40rem 16rem at 50% -4rem, rgb(198 240 50 / 0.16), transparent 70%);
+    background-repeat: no-repeat;
+  }
+
+  .page-surface h1 {
+    @apply text-4xl font-extrabold md:text-5xl;
+  }
+
+  /* Outlined display text (hero "10K"). */
+  .text-outline {
+    color: transparent;
+    -webkit-text-stroke: 2px theme('colors.action.400');
+  }
+
+  /* ===== Event-facts ticker ===== */
   .marquee {
     @apply relative w-full overflow-hidden;
   }
   .marquee-track {
-    @apply flex w-max items-center gap-12 px-6;
-    animation: marquee-scroll 38s linear infinite;
+    @apply flex w-max items-center gap-10 px-6;
   }
-  .marquee:hover .marquee-track {
-    animation-play-state: paused;
+  @media (prefers-reduced-motion: no-preference) {
+    .marquee-track {
+      animation: marquee-scroll 40s linear infinite;
+    }
+    .marquee:hover .marquee-track,
+    .marquee:focus-within .marquee-track,
+    .marquee[data-paused='true'] .marquee-track {
+      animation-play-state: paused;
+    }
   }
   .marquee-item {
-    @apply flex h-20 min-w-[180px] items-center justify-center rounded-xl bg-white px-5 shadow-soft;
-    /* Default: subtle grayscale; hover restores full colour. */
+    @apply flex h-20 min-w-[180px] items-center justify-center rounded-2xl bg-white px-6 shadow-soft ring-1 ring-brand-900/5;
     filter: grayscale(100%);
-    opacity: 0.75;
+    opacity: 0.7;
     transition: filter 0.25s ease, opacity 0.25s ease, transform 0.25s ease;
   }
   .marquee-item:hover {
@@ -102,25 +148,28 @@
     transform: translateY(-2px);
   }
   .marquee-fade {
-    @apply pointer-events-none absolute inset-y-0 w-16;
+    @apply pointer-events-none absolute inset-y-0 w-20;
   }
-  .marquee-fade--left {
-    left: 0;
-    background: linear-gradient(to right, #ffffff, rgba(255, 255, 255, 0));
-  }
-  .marquee-fade--right {
-    right: 0;
-    background: linear-gradient(to left, #ffffff, rgba(255, 255, 255, 0));
-  }
+  .marquee-fade--left { left: 0; background: linear-gradient(to right, theme('colors.brand.50'), transparent); }
+  .marquee-fade--right { right: 0; background: linear-gradient(to left, theme('colors.brand.50'), transparent); }
 }
 
 @keyframes marquee-scroll {
   from { transform: translateX(0); }
-  to   { transform: translateX(-50%); }
+  to { transform: translateX(-50%); }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .marquee-track {
-    animation: none;
+/* ===== Scroll reveal (progressive enhancement; decorative, no fallback) =====
+   Native scroll-driven animation: compositor-only (opacity/translate). */
+@media (prefers-reduced-motion: no-preference) {
+  @supports ((animation-timeline: view()) and (animation-range: entry)) {
+    @keyframes reveal-up {
+      from { opacity: 0; translate: 0 2rem; }
+    }
+    .reveal {
+      animation: reveal-up auto linear backwards;
+      animation-timeline: view();
+      animation-range: entry 0% entry 55%;
+    }
   }
 }

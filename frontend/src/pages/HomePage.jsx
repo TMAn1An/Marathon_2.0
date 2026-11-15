@@ -1,9 +1,9 @@
 import { Link } from 'react-router-dom'
 import CountdownClock from '../components/CountdownClock'
 import SlotMeter from '../components/SlotMeter'
+import SponsorMarquee from '../components/SponsorMarquee'
 import { useEvent } from '../context/EventContext'
 import { formatCurrency, formatDate } from '../utils/format'
-import SponsorMarquee from '../components/SponsorMarquee'
 
 const benefits = [
   {
@@ -50,186 +50,155 @@ const benefits = [
   },
 ]
 
+const steps = (holdMinutes) => [
+  { title: 'Reserve', body: `Fill in the form and your slot is held for ${holdMinutes} minutes.` },
+  { title: 'Pay', body: 'Send the fee by bKash or Nagad and submit your TrxID. An organizer verifies it.' },
+  { title: 'Run', body: 'Your BIB arrives by email. After the race, download your certificate with your BIB and phone.' },
+]
+
+const spans = ['lg:col-span-4', 'lg:col-span-2', 'lg:col-span-2', 'lg:col-span-4', 'lg:col-span-3', 'lg:col-span-3']
+
 export default function HomePage() {
   const { event, fees, slots, holdMinutes } = useEvent()
-  const date = event.date
-  const venue = event.venue
-  const eventName = event.name
   const total = slots?.total
 
   return (
     <div>
-      {/* ============================================================= */}
-      {/* HERO — green background, orange CTA, all above the fold        */}
-      {/* ============================================================= */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-brand-900 via-brand-800 to-brand-700 text-white">
-        <div
-          aria-hidden
-          className="absolute inset-0 opacity-30"
-          style={{
-            backgroundImage:
-              'radial-gradient(circle at 18% 18%, rgba(255,255,255,0.18), transparent 45%), radial-gradient(circle at 82% 82%, rgba(249,96,21,0.35), transparent 45%)',
-          }}
-        />
+      {/* HERO */}
+      <section className="hero-bg relative overflow-hidden pb-24 pt-36 text-white lg:pt-44">
+        <span aria-hidden className="text-outline pointer-events-none absolute -right-6 top-24 select-none font-display text-[22rem] font-extrabold leading-none opacity-[0.12] max-lg:hidden">
+          10K
+        </span>
 
-        <div className="relative mx-auto max-w-7xl px-4 py-14 lg:py-20 grid gap-10 lg:grid-cols-12 items-center">
-          <div className="lg:col-span-7">
-            <span className="badge-amber text-[11px]">
-              {formatDate(date, { dateStyle: 'long' })} &nbsp;·&nbsp; {venue}
-            </span>
+        <div className="relative mx-auto grid max-w-6xl items-center gap-14 px-6 lg:grid-cols-[1.25fr_1fr]">
+          <div>
+            <p className="inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-1.5 text-xs font-semibold tracking-wide text-brand-100 ring-1 ring-white/15">
+              <span className="h-2 w-2 animate-pulse rounded-full bg-action-400 motion-reduce:animate-none" aria-hidden />
+              {formatDate(event.date, { dateStyle: 'long' })} · {event.venue}
+            </p>
 
-            <h1 className="mt-4 text-4xl md:text-5xl lg:text-[3.5rem] font-bold leading-tight text-white">
-              Run with us.
+            <h1 className="mt-6 font-display text-5xl font-extrabold leading-[0.95] tracking-tight text-white sm:text-6xl lg:text-7xl xl:text-[5.5rem]">
+              Run <span className="text-outline">10K</span>
               <br />
-              <span className="text-accent-300">{eventName}</span>
+              with IUBAT CSE.
             </h1>
 
-            <p className="mt-4 max-w-xl text-base lg:text-lg text-brand-50/90">
-              A community 10K hosted by the IUBAT Department of Computer Science &amp; Engineering.
-              <strong className="text-white"> {total ?? 'Limited'} runners.</strong> One starting line. One finisher medal with your name on it.
+            <p className="mt-6 max-w-xl text-lg leading-relaxed text-brand-200">
+              The {event.name}: a community run for students, faculty and friends of the university.
+              {total ? <> Just <strong className="text-white">{total} BIBs</strong> are up for grabs.</> : null}
             </p>
 
-            <div className="mt-6 flex flex-wrap gap-3">
-              <Link to="/register" className="btn-cta">Register Now</Link>
-              <Link to="/about" className="btn-ghost">View Details</Link>
-            </div>
-
-            <div className="mt-6">
-              <p className="text-[11px] uppercase tracking-widest text-brand-100 mb-2">Race day countdown</p>
-              <CountdownClock targetDate={date} />
+            <div className="mt-9 flex flex-wrap gap-3">
+              <Link to="/register" className="btn-cta">Register now</Link>
+              <Link to="/registration-info" className="btn-ghost !px-8 !py-3.5 text-base">How it works</Link>
             </div>
           </div>
 
-          <div className="lg:col-span-5">
-            <SlotMeter />
+          <div className="grid gap-4">
+            <CountdownClock targetDate={event.date} />
+            <SlotMeter variant="glass" />
           </div>
         </div>
       </section>
 
-      {/* ============================================================= */}
-      {/* TRUST STRIP — organised by IUBAT CSE                           */}
-      {/* ============================================================= */}
-      <section className="bg-white border-b border-brand-100">
-        <div className="mx-auto max-w-7xl px-4 py-8">
-          <div className="grid items-center gap-6 md:grid-cols-[1fr_auto] md:gap-10">
-            <div>
-              <p className="text-xs uppercase tracking-wider text-brand-700 font-semibold">
-                Officially organised by
-              </p>
-              <p className="mt-1 text-lg font-semibold text-brand-900">
-                IUBAT &middot; School of Computer Science &amp; Engineering
-              </p>
-              <p className="mt-1 text-sm text-slate-600 max-w-xl">
-                Hosted on the IUBAT Main Campus and run by the CSE Department with the help of student and faculty volunteers.
-              </p>
+      {/* FACT STRIP */}
+      <section aria-label="Race facts" className="bg-action-400 text-brand-950">
+        <dl className="mx-auto grid max-w-6xl grid-cols-2 gap-x-6 gap-y-4 px-6 py-6 text-center md:grid-cols-4 md:text-left">
+          {[
+            ['Distance', '10 kilometres'],
+            ['Race day', formatDate(event.date, { dateStyle: 'medium' })],
+            ['Start & finish', 'IUBAT campus'],
+            ['Categories', 'Students · Faculty'],
+          ].map(([k, v]) => (
+            <div key={k}>
+              <dt className="text-[11px] font-semibold uppercase tracking-[0.18em] opacity-70">{k}</dt>
+              <dd className="mt-0.5 font-display text-lg font-bold">{v}</dd>
             </div>
-            <Link to="/organizers" className="btn-outline md:justify-self-end">Meet the team</Link>
-          </div>
-        </div>
+          ))}
+        </dl>
       </section>
 
-      {/* ============================================================= */}
-      {/* WHAT YOU GET — icon-driven benefits grid                       */}
-      {/* ============================================================= */}
-      <section className="bg-brand-50 py-16">
-        <div className="mx-auto max-w-7xl px-4">
-          <div className="max-w-2xl">
-            <span className="badge-orange">Race-pack</span>
-            <h2 className="mt-3 text-3xl md:text-4xl">What you get</h2>
-            <p className="mt-2 text-slate-600">
-              Every confirmed registration includes the full IUBAT race experience — gear, support, timing, finisher recognition.
-            </p>
-          </div>
+      {/* WHAT YOU GET: bento */}
+      <section className="mx-auto max-w-6xl px-6 py-24">
+        <div className="reveal max-w-2xl">
+          <span className="eyebrow">Race pack</span>
+          <h2 className="mt-4 text-4xl md:text-5xl">Everything on race day, sorted.</h2>
+          <p className="mt-4 text-lg text-brand-600">Every confirmed registration includes the full experience.</p>
+        </div>
 
-          <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {benefits.map((b) => (
-              <div key={b.title} className="card p-6 hover:shadow-md transition">
-                <div className="grid h-12 w-12 place-items-center rounded-lg bg-brand-700 text-white">
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">{b.icon}</svg>
+        <div className="mt-12 grid gap-4 lg:grid-cols-6">
+          {benefits.map((b, i) => {
+            const feature = i === 0
+            return (
+              <article key={b.title}
+                className={`reveal group relative overflow-hidden rounded-3xl p-7 transition duration-300 hover:-translate-y-1 ${spans[i]} ${
+                  feature ? 'card-dark !rounded-3xl hero-bg min-h-[16rem]' : 'card !rounded-3xl hover:shadow-lift'
+                }`}>
+                <div className={`grid h-12 w-12 place-items-center rounded-2xl ${feature ? 'bg-action-400 text-brand-950' : 'bg-brand-950 text-action-400'}`}>
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" aria-hidden>{b.icon}</svg>
                 </div>
-                <h3 className="mt-4 text-lg">{b.title}</h3>
-                <p className="mt-2 text-sm text-slate-600">{b.body}</p>
-              </div>
-            ))}
-          </div>
+                <h3 className={`mt-5 text-xl ${feature ? '!text-white' : ''}`}>{b.title}</h3>
+                <p className={`mt-2 max-w-md text-sm leading-relaxed ${feature ? 'text-brand-200' : 'text-brand-600'}`}>{b.body}</p>
+              </article>
+            )
+          })}
         </div>
       </section>
 
-      {/* ============================================================= */}
-      {/* AT A GLANCE — facts straight from the event configuration     */}
-      {/* ============================================================= */}
-      <section className="bg-white py-16">
-        <div className="mx-auto max-w-7xl px-4">
-          <div className="max-w-2xl">
-            <span className="badge-amber">At a glance</span>
-            <h2 className="mt-3 text-3xl md:text-4xl">Race day in numbers</h2>
+      {/* HOW IT WORKS */}
+      <section className="bg-white py-24">
+        <div className="mx-auto max-w-6xl px-6">
+          <div className="reveal max-w-2xl">
+            <span className="eyebrow">How it works</span>
+            <h2 className="mt-4 text-4xl md:text-5xl">Three steps to the start line.</h2>
           </div>
-          <dl className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <ol className="mt-14 grid gap-10 md:grid-cols-3">
+            {steps(holdMinutes).map((st, i) => (
+              <li key={st.title} className="reveal relative">
+                <span className="font-display text-7xl font-extrabold leading-none text-brand-100" aria-hidden>0{i + 1}</span>
+                <h3 className="-mt-3 text-2xl">{st.title}</h3>
+                <p className="mt-2 leading-relaxed text-brand-600">{st.body}</p>
+              </li>
+            ))}
+          </ol>
+        </div>
+      </section>
+
+      {/* NUMBERS */}
+      <section className="hero-bg py-24 text-white">
+        <div className="mx-auto max-w-6xl px-6">
+          <h2 className="reveal max-w-xl text-4xl !text-white md:text-5xl">The race in numbers.</h2>
+          <dl className="mt-12 grid gap-px overflow-hidden rounded-3xl bg-white/10 ring-1 ring-white/10 sm:grid-cols-2 lg:grid-cols-4">
             {[
-              ['Distance', '10 KM'],
-              ['Runner capacity', total ?? '—'],
-              ['Student fee', formatCurrency(fees.student)],
-              ['Faculty fee', formatCurrency(fees.faculty)],
-            ].map(([label, value]) => (
-              <div key={label} className="card p-5 text-center">
-                <dt className="text-xs uppercase tracking-wide text-slate-500">{label}</dt>
-                <dd className="mt-1 text-3xl font-bold text-brand-900">{value}</dd>
+              ['Distance', '10', 'km'],
+              ['Runner capacity', total ?? '—', ''],
+              ['Student fee', formatCurrency(fees.student), ''],
+              ['Faculty fee', formatCurrency(fees.faculty), ''],
+            ].map(([label, value, unit]) => (
+              <div key={label} className="reveal bg-brand-950 p-8">
+                <dt className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-300">{label}</dt>
+                <dd className="mt-3 font-display text-5xl font-extrabold tabular-nums text-action-400">
+                  {value}<span className="ml-1 text-2xl text-brand-300">{unit}</span>
+                </dd>
               </div>
             ))}
           </dl>
         </div>
       </section>
 
-      {/* ============================================================= */}
-      {/* SPONSORS — large, prominent, auto-scrolling logo carousel      */}
-      {/* ============================================================= */}
       <SponsorMarquee />
 
-      {/* ============================================================= */}
-      {/* URGENCY — slots + countdown + CTA                              */}
-      {/* ============================================================= */}
-      <section className="bg-brand-800 text-white py-14">
-        <div className="mx-auto max-w-7xl px-4 grid gap-8 lg:grid-cols-3 items-center">
-          <div className="lg:col-span-2">
-            <span className="badge-orange bg-action-500 text-white">Limited capacity</span>
-            <h2 className="mt-3 text-3xl md:text-4xl text-white">{total ? `Only ${total} BIBs.` : 'Limited BIBs.'} Don&rsquo;t miss yours.</h2>
-            <p className="mt-3 text-brand-50/90 max-w-2xl">
-              Registration closes when the last slot is taken. Reserve a slot, finish payment, and your BIB is locked in.
-            </p>
-
-            <div className="mt-5">
-              <SlotMeter compact />
-            </div>
-
-            <div className="mt-6">
-              <p className="text-[11px] uppercase tracking-widest text-brand-100 mb-2">Race-day countdown</p>
-              <CountdownClock targetDate={date} />
-            </div>
-          </div>
-
-          <div className="text-center lg:text-right">
-            <Link to="/register" className="btn-cta">Reserve my slot</Link>
-            <p className="mt-3 text-xs text-brand-100/80">
-              Slot is held for {holdMinutes} minutes while you complete payment.
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* ============================================================= */}
-      {/* FINAL CTA — clean, centered                                    */}
-      {/* ============================================================= */}
-      <section className="bg-brand-50 py-16">
-        <div className="mx-auto max-w-3xl px-4 text-center">
-          <h2 className="text-3xl md:text-4xl">
-            Don&rsquo;t miss your chance to be part of the {eventName}.
+      {/* FINAL CTA */}
+      <section className="mx-auto max-w-6xl px-6 pb-8 pt-4">
+        <div className="reveal relative overflow-hidden rounded-4xl bg-action-400 px-8 py-16 text-center md:px-16">
+          <span aria-hidden className="pointer-events-none absolute -bottom-16 left-1/2 -translate-x-1/2 select-none font-display text-[16rem] font-extrabold leading-none text-brand-950/[0.06]">10K</span>
+          <h2 className="relative mx-auto max-w-2xl text-4xl text-brand-950 md:text-5xl">
+            Lace up. Your slot won&rsquo;t wait forever.
           </h2>
-          <p className="mt-4 text-slate-600">
-            Lace up. Show up. Run with the CSE department, your batch and hundreds of new friends — all on one morning.
-          </p>
-          <div className="mt-8 flex flex-wrap justify-center gap-3">
-            <Link to="/register" className="btn-cta">Register Now</Link>
-            <Link to="/registration-info" className="btn-outline">Read the rules</Link>
+          <div className="relative mt-6 flex justify-center"><SlotMeter compact /></div>
+          <div className="relative mt-8 flex flex-wrap justify-center gap-3">
+            <Link to="/register" className="btn-cta !bg-brand-950 !text-white hover:!bg-brand-800">Register now</Link>
+            <Link to="/faq" className="btn-outline !border-brand-950/30 !text-brand-950 hover:!bg-brand-950 hover:!text-white !px-8 !py-3.5 text-base">Read the FAQ</Link>
           </div>
         </div>
       </section>
