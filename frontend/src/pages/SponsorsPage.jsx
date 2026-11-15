@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { eventApi } from '../api/endpoints'
 import SafeImage from '../components/SafeImage'
+import { useEvent } from '../context/EventContext'
 
 const tierLabel = {
   platinum: 'Platinum',
@@ -19,6 +20,7 @@ const tierBadgeClass = {
 }
 
 export default function SponsorsPage() {
+  const { event } = useEvent()
   const [sponsors, setSponsors] = useState([])
   const [loading, setLoading] = useState(true)
 
@@ -34,13 +36,13 @@ export default function SponsorsPage() {
       <h1 className="mt-3 text-4xl">Sponsors &amp; partners</h1>
       <p className="mt-3 max-w-3xl text-slate-600">
         We are grateful to the organizations that make the IUBAT CSE 10K Marathon possible.
-        Want to partner with us next year? Email <a className="text-brand-700 underline" href="mailto:marathon@iubat.edu">marathon@iubat.edu</a>.
+        Want to partner with us next year? Email <a className="text-brand-700 underline" href={`mailto:${event.support_email}`}>{event.support_email}</a>.
       </p>
 
       {loading ? (
         <p className="mt-10 text-slate-500">Loading sponsors…</p>
       ) : sponsors.length === 0 ? (
-        <p className="mt-10 text-slate-500">Sponsorship slots are still open. Email marathon@iubat.edu to partner with us.</p>
+        <p className="mt-10 text-slate-500">Sponsorship slots are still open. Email {event.support_email} to partner with us.</p>
       ) : (
         <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {sponsors.map((s) => (

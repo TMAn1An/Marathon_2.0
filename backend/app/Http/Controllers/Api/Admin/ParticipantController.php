@@ -2,12 +2,14 @@
 
 namespace App\Http\Controllers\Api\Admin;
 
+use App\Exceptions\PaymentException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\UpdateParticipantRequest;
 use App\Models\Participant;
 use App\Models\Payment;
 use App\Services\BibService;
 use App\Services\NotificationService;
+use App\Services\PaymentService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -59,7 +61,12 @@ class ParticipantController extends Controller
 
     public function update(UpdateParticipantRequest $request, Participant $participant): JsonResponse
     {
-        $participant->fill($request->validated());
+        $data = $request->validated();
+        if (array_key_exists('finish_time', $data)) {
+            $data['finish_time_seconds'] = Participant::parseFinishTime($data['finish_time']);
+            unset($data['finish_time']);
+        }
+        $participant->fill($data);
 
         if ($request->status === Participant::STATUS_CONFIRMED && ! $participant->bib_number) {
             $participant->confirmed_at = $participant->confirmed_at ?? now();
@@ -90,15 +97,25 @@ class ParticipantController extends Controller
             ], 404);
         }
 
-        app(\App\Services\PaymentService::class)->confirm(
-            $payment,
-            'ADMIN-VERIFIED',
-            ['verified_by' => optional(request()->user('admin'))->email]
-        );
+        try {
+            app(PaymentService::class)->confirm(
+                $payment,
+                $payment->submitted_reference ?? 'ADMIN-VERIFIED',
+                ['verified_by' => optional(request()->user('admin'))->email]
+            );
+        } catch (PaymentException $e) {
+            return response()->json(['message' => $e->getMessage()], $e->getStatusCode());
+        }
 
         return response()->json([
             'data' => $participant->fresh(['payments', 'certificate']),
         ]);
+    }
+
+    /** Neutralises spreadsheet formula injection (=, +, -, @ prefixes). */
+    public static function csvSafe(mixed $value): mixed
+    {
+        return is_string($value) && preg_match('/^[=+\-@\t\r]/', $value) ? "'".$value : $value;
     }
 
     /**
@@ -115,7 +132,7 @@ class ParticipantController extends Controller
             $query->where('status', $status);
         }
 
-        $filename = 'participants-' . now()->format('Ymd-His') . '.csv';
+        $filename = 'participants-'.now()->format('Ymd-His').'.csv';
         $headers = [
             'Content-Type' => 'text/csv',
             'Content-Disposition' => "attachment; filename=\"{$filename}\"",
@@ -126,13 +143,13 @@ class ParticipantController extends Controller
             fputcsv($out, [
                 'BIB', 'Full Name', 'University ID', 'Category', 'Phone',
                 'Email', 'Emergency Contact', 'T-shirt Size', 'Status',
-                'Payment Status', 'Amount', 'Confirmed At',
+                'Payment Status', 'Amount', 'Confirmed At', 'Finish Time',
             ]);
 
             $query->orderBy('id')->chunk(200, function ($rows) use ($out) {
                 foreach ($rows as $p) {
                     $payment = $p->latestPayment;
-                    fputcsv($out, [
+                    fputcsv($out, array_map([self::class, 'csvSafe'], [
                         $p->bib_number,
                         $p->full_name,
                         $p->university_id,
@@ -145,7 +162,8 @@ class ParticipantController extends Controller
                         $payment?->status,
                         $payment?->amount,
                         optional($p->confirmed_at)->toDateTimeString(),
-                    ]);
+                        $p->finish_time,
+                    ]));
                 }
             });
             fclose($out);

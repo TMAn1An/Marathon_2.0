@@ -6,9 +6,6 @@ use App\Models\NotificationLog;
 use App\Models\Participant;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
-use Illuminate\Mail\Mailables\Envelope;
-use Illuminate\Mail\Mailables\Content;
-use Illuminate\Mail\Mailable;
 
 class NotificationService
 {
@@ -112,15 +109,15 @@ class NotificationService
         $support = config('marathon.event.support_email');
 
         return "Hello {$participant->full_name},\n\n"
-            . "Thank you for registering for the {$event}!\n\n"
-            . "Your registration is confirmed.\n"
-            . "BIB Number: {$participant->bib_number}\n"
-            . "Category: " . ucfirst($participant->category) . "\n"
-            . "T-shirt size: {$participant->tshirt_size}\n\n"
-            . "Event Date: {$date}\n"
-            . "Venue: {$venue}\n\n"
-            . "Please arrive 30 minutes early for BIB collection.\n"
-            . "For queries, contact {$support}.\n\n"
-            . "See you at the starting line!";
+            ."Thank you for registering for the {$event}!\n\n"
+            ."Your registration is confirmed.\n"
+            ."BIB Number: {$participant->bib_number}\n"
+            .'Category: '.ucfirst($participant->category)."\n"
+            ."T-shirt size: {$participant->tshirt_size}\n\n"
+            ."Event Date: {$date}\n"
+            ."Venue: {$venue}\n\n"
+            ."Please arrive 30 minutes early for BIB collection.\n"
+            ."For queries, contact {$support}.\n\n"
+            .'See you at the starting line!';
     }
 }

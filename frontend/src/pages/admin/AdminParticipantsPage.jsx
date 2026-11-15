@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { adminApi } from '../../api/endpoints'
-import { getAdminToken } from '../../api/client'
+import { pickErrorMessage } from '../../api/client'
+import Alert from '../../components/Alert'
 import { formatDateTime, statusBadgeClass } from '../../utils/format'
 
 const categories = [
@@ -24,6 +25,8 @@ export default function AdminParticipantsPage() {
   const [loading, setLoading] = useState(true)
   const [editing, setEditing] = useState(null)
   const [busy, setBusy] = useState(false)
+  const [notice, setNotice] = useState('')
+  const [searchInput, setSearchInput] = useState('')
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -37,32 +40,42 @@ export default function AdminParticipantsPage() {
 
   useEffect(() => { load() }, [load])
 
+  useEffect(() => {
+    const id = setTimeout(() => {
+      setPage(1)
+      setFilters((f) => (f.search === searchInput ? f : { ...f, search: searchInput }))
+    }, 350)
+    return () => clearTimeout(id)
+  }, [searchInput])
+
   const onChangeFilter = (key, value) => {
     setPage(1)
     setFilters((f) => ({ ...f, [key]: value }))
   }
 
   const downloadCsv = async () => {
-    const url = adminApi.exportUrl(filters)
-    const token = getAdminToken()
-    const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } })
-    if (!res.ok) {
-      alert('Could not export CSV.')
-      return
+    setNotice('')
+    try {
+      const { data } = await adminApi.exportCsv(filters)
+      const link = document.createElement('a')
+      link.href = URL.createObjectURL(data)
+      link.download = `participants-${new Date().toISOString().slice(0, 10)}.csv`
+      link.click()
+      URL.revokeObjectURL(link.href)
+    } catch (err) {
+      setNotice(pickErrorMessage(err, 'Could not export CSV.'))
     }
-    const blob = await res.blob()
-    const link = document.createElement('a')
-    link.href = URL.createObjectURL(blob)
-    link.download = 'participants.csv'
-    link.click()
   }
 
   const verifyPayment = async (participant) => {
     if (!confirm(`Mark payment as verified for ${participant.full_name}?`)) return
     setBusy(true)
+    setNotice('')
     try {
       await adminApi.verifyPayment(participant.id)
       load()
+    } catch (err) {
+      setNotice(pickErrorMessage(err))
     } finally {
       setBusy(false)
     }
@@ -81,9 +94,12 @@ export default function AdminParticipantsPage() {
         emergency_contact: editing.emergency_contact,
         tshirt_size: editing.tshirt_size,
         status: editing.status,
+        finish_time: editing.finish_time || null,
       })
       setEditing(null)
       load()
+    } catch (err) {
+      setNotice(pickErrorMessage(err))
     } finally {
       setBusy(false)
     }
@@ -96,8 +112,10 @@ export default function AdminParticipantsPage() {
         <button onClick={downloadCsv} className="btn-outline">Export CSV</button>
       </div>
 
+      <Alert>{notice}</Alert>
+
       <div className="card p-4 grid gap-3 sm:grid-cols-4">
-        <input value={filters.search} onChange={(e) => onChangeFilter('search', e.target.value)}
+        <input value={searchInput} onChange={(e) => setSearchInput(e.target.value)} aria-label="Search participants"
           className="input sm:col-span-2" placeholder="Search by name, email, BIB, ID…" />
         <select className="input" value={filters.category} onChange={(e) => onChangeFilter('category', e.target.value)}>
           {categories.map((c) => <option key={c.value} value={c.value}>{c.label}</option>)}
@@ -139,6 +157,11 @@ export default function AdminParticipantsPage() {
                   {p.latest_payment ? (
                     <span className={statusBadgeClass(p.latest_payment.status)}>{p.latest_payment.status}</span>
                   ) : <span className="text-slate-400">—</span>}
+                  {p.latest_payment?.submitted_reference && (
+                    <div className="mt-1 font-mono text-xs text-slate-500" title="TrxID submitted by the runner">
+                      {p.latest_payment.gateway} · {p.latest_payment.submitted_reference}
+                    </div>
+                  )}
                 </td>
                 <td className="px-4 py-3 text-slate-500">{formatDateTime(p.confirmed_at)}</td>
                 <td className="px-4 py-3 space-x-2 whitespace-nowrap">
@@ -168,7 +191,7 @@ export default function AdminParticipantsPage() {
       </div>
 
       {editing && (
-        <div className="fixed inset-0 z-30 grid place-items-center bg-black/40 px-4">
+        <div className="fixed inset-0 z-30 grid place-items-center bg-black/40 px-4" role="dialog" aria-modal="true" aria-label="Edit participant">
           <form onSubmit={saveEdit} className="w-full max-w-lg rounded-xl bg-white p-6 shadow-xl space-y-4">
             <h3 className="text-lg">Edit participant</h3>
             <div className="grid gap-3 sm:grid-cols-2">
@@ -207,7 +230,12 @@ export default function AdminParticipantsPage() {
                   {['XS','S','M','L','XL','XXL'].map((s) => <option key={s} value={s}>{s}</option>)}
                 </select>
               </div>
-              <div className="sm:col-span-2">
+              <div>
+                <label className="label">Finish time (H:MM:SS)</label>
+                <input className="input font-mono" placeholder="0:52:14" value={editing.finish_time || ''}
+                  onChange={(e) => setEditing({ ...editing, finish_time: e.target.value })} />
+              </div>
+              <div>
                 <label className="label">Status</label>
                 <select className="input" value={editing.status}
                   onChange={(e) => setEditing({ ...editing, status: e.target.value })}>

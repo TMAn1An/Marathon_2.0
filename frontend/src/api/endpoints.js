@@ -16,12 +16,18 @@ export const registrationApi = {
 
 export const paymentsApi = {
   initiate: (payload) => apiClient.post('/payments/initiate', payload),
+  submit: (payload) => apiClient.post('/payments/submit', payload),
   confirm: (payload) => apiClient.post('/payments/confirm', payload),
-  show: (transactionId) => apiClient.get(`/payments/${transactionId}`),
+  config: () => apiClient.get('/payments/config'),
+  show: (transactionId, token) => apiClient.get(`/payments/${transactionId}`, { params: { token } }),
+}
+
+export const resultsApi = {
+  list: (category) => apiClient.get('/results', { params: category ? { category } : {} }),
 }
 
 export const certificateApi = {
-  lookup: (query) => apiClient.get('/certificates/lookup', { params: { query } }),
+  lookup: (bib, phone) => apiClient.get('/certificates/lookup', { params: { bib, phone } }),
   verify: (uuid) => apiClient.get(`/certificates/${uuid}/verify`),
   downloadUrl: (uuid) =>
     `${apiClient.defaults.baseURL}/certificates/${uuid}/download`,
@@ -39,10 +45,10 @@ export const adminApi = {
   participant: (id) => apiClient.get(`/admin/participants/${id}`),
   updateParticipant: (id, payload) => apiClient.patch(`/admin/participants/${id}`, payload),
   verifyPayment: (id) => apiClient.post(`/admin/participants/${id}/verify-payment`),
-  exportUrl: (params = {}) => {
-    const query = new URLSearchParams(params).toString()
-    return `${apiClient.defaults.baseURL}/admin/participants/export${query ? `?${query}` : ''}`
-  },
+  // The export is behind bearer auth, so it must be fetched (not linked) and saved as a blob.
+  exportCsv: (params = {}) =>
+    apiClient.get('/admin/participants/export', { params, responseType: 'blob' }),
+  importResults: (rows) => apiClient.post('/admin/results/import', { rows }),
   bulkNotify: (payload) => apiClient.post('/admin/notifications/bulk', payload),
   sponsors: () => apiClient.get('/admin/sponsors'),
   createSponsor: (payload) => apiClient.post('/admin/sponsors', payload),

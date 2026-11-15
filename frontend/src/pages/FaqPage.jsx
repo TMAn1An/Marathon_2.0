@@ -1,4 +1,6 @@
-const faqs = [
+import { useEvent } from '../context/EventContext'
+
+const buildFaqs = (holdMinutes) => [
   {
     q: 'Who can participate?',
     a: 'Any current IUBAT student or faculty member. You will need to provide your university ID at registration and on race day.',
@@ -9,7 +11,7 @@ const faqs = [
   },
   {
     q: 'What happens if I miss my payment window?',
-    a: 'Slots are held for 10 minutes after registration. If payment is not completed in that window the slot is released and you must register again.',
+    a: `Slots are held for ${holdMinutes} minutes after registration. If payment is not completed in that window the slot is released and you must register again.`,
   },
   {
     q: 'Can I get a refund?',
@@ -21,16 +23,18 @@ const faqs = [
   },
   {
     q: 'Where do I download my finisher certificate?',
-    a: 'After the race, head to the Certificate page, enter your phone number or BIB, and download your PDF certificate.',
+    a: 'After the race, head to the Certificate page, enter your BIB and registered phone number, and download your PDF certificate.',
   },
 ]
 
 export default function FaqPage() {
+  const { event, holdMinutes } = useEvent()
+  const faqs = buildFaqs(holdMinutes)
   return (
     <div className="mx-auto max-w-4xl px-4 py-14">
       <h1 className="text-4xl">Frequently asked questions</h1>
       <p className="mt-3 text-slate-600">
-        Don't see your question here? Email us at <a href="mailto:marathon@iubat.edu" className="text-brand-700 underline">marathon@iubat.edu</a>.
+        Don't see your question here? Email us at <a href={`mailto:${event.support_email}`} className="text-brand-700 underline">{event.support_email}</a>.
       </p>
 
       <div className="mt-8 divide-y divide-slate-200 rounded-xl bg-white shadow-soft">

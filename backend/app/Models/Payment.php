@@ -11,7 +11,9 @@ class Payment extends Model
     use HasFactory;
 
     public const STATUS_PENDING = 'pending';
+
     public const STATUS_COMPLETED = 'completed';
+
     public const STATUS_FAILED = 'failed';
 
     protected $fillable = [
@@ -21,6 +23,8 @@ class Payment extends Model
         'gateway',
         'status',
         'payer_phone',
+        'submitted_reference',
+        'submitted_at',
         'gateway_reference',
         'gateway_response',
         'paid_at',
@@ -32,6 +36,7 @@ class Payment extends Model
         'amount' => 'decimal:2',
         'gateway_response' => 'array',
         'paid_at' => 'datetime',
+        'submitted_at' => 'datetime',
         'failed_at' => 'datetime',
     ];
 

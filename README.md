@@ -1,6 +1,6 @@
 # IUBAT CSE 10K Marathon Management System
 
-A complete, production-ready management system for the IUBAT CSE 10K Marathon. Built with **Laravel 11** + **MySQL** for the backend API and **React 19** + **Vite** + **Tailwind CSS** for the frontend.
+A complete management system for the IUBAT CSE 10K Marathon. Built with **Laravel 13** + **MySQL** for the backend API and **React 19** + **Vite** + **Tailwind CSS** for the frontend.
 
 ## Features
 
@@ -14,32 +14,36 @@ A complete, production-ready management system for the IUBAT CSE 10K Marathon. B
 - External results board
 
 ### Registration & payment lifecycle
-- Capacity-controlled (max 400 by default; configurable)
-- 10-minute slot reservation with automatic expiry & release
-- Serializable transaction + row-level lock to prevent race conditions
-- Payment: simulated bKash / Nagad initiate → confirm/fail
-- Idempotent payment confirmation; participant status auto-transitions
-- Auto-generated unique BIB numbers on successful payment
-- Email + mock SMS notifications (logged to DB; failures never break registration)
+- Capacity-controlled (default 400, configurable) with a timed slot hold (default 10 min)
+- Race-safe slot allocation (transaction + recount); expired holds are released automatically
+- **Manual bKash / Nagad verification (production default):** the runner sends money to the
+  organizers' merchant number, submits the TrxID, and an admin verifies it. The slot is held
+  for up to 48 h while verification is pending. A TrxID can only be used once.
+- **Simulated checkout (demo only):** enabled with `MARATHON_PAYMENT_MODE=simulated`; the API
+  refuses it when `APP_ENV=production`, so nobody can mark themselves as paid on a live site
+- Sequential BIB numbers (`IUB0001`, `IUB0002`, …) assigned on confirmation
+- Confirmation email + mock SMS, logged to the database; mail failures never break registration
+- Public checkout uses an unguessable per-registration token; no email/phone is ever returned
+  by public endpoints
+
+### Results & certificates
+- Admins import finishing times (`BIB,time` CSV or paste) or edit one runner at a time
+- Public results board with overall / student / faculty ranking and search
+- Certificates unlock once a finish time exists (`MARATHON_CERT_REQUIRE_FINISH`), and are looked up
+  with **BIB + registered phone** so other people's certificates can't be enumerated
+- DOMPDF A4 certificate with rank, finish time and a QR code to a public verification page
 
 ### Admin dashboard
-- Sanctum bearer-token auth (separate `admin` guard)
-- Slot usage, payment, and category breakdown
-- Participant list with search + filters (category / status)
-- Edit participant, manually verify payments, paginate
-- Streaming CSV export of participants
-- Bulk notifications (email / mock SMS), filterable by category & status
-- Sponsor & volunteer CRUD
-
-### Certificates
-- DOMPDF rendered, A4 landscape, IUBAT-themed certificate
-- Embedded SVG QR code → public verification endpoint
-- Download counter tracked per certificate
+- Sanctum bearer-token auth with expiring tokens (`SANCTUM_TOKEN_EXPIRATION`, default 12 h)
+- Slot usage, payment and category breakdown
+- Participant list with debounced search + filters; edit, verify payments, see submitted TrxIDs
+- CSV export (formula-injection safe), bulk email / mock SMS notifications
+- Results import, sponsor & volunteer management
 
 ## Project layout
 
 ```
-backend/    # Laravel 11 application (API only)
+backend/    # Laravel 13 application (API only)
 frontend/   # React 19 + Vite + Tailwind SPA
 ```
 
@@ -47,112 +51,112 @@ frontend/   # React 19 + Vite + Tailwind SPA
 
 | Layer    | Tech |
 | -------- | ---- |
-| Backend  | Laravel 11, Sanctum, DOMPDF (`barryvdh/laravel-dompdf`), `simplesoftwareio/simple-qrcode` |
+| Backend  | Laravel 13, Sanctum, DOMPDF (`barryvdh/laravel-dompdf`), `simplesoftwareio/simple-qrcode` |
 | Database | MySQL (production) / SQLite (local dev) |
 | Frontend | React 19, Vite 8, Tailwind CSS 3, Axios, React Router 7 |
 | Auth     | Sanctum bearer tokens (admin) |
 
 ## Local setup
 
-### 1. Backend
-
-Requires PHP 8.3+ and Composer.
+### 1. Backend (PHP 8.3+, Composer)
 
 ```bash
 cd backend
 cp .env.example .env
 php artisan key:generate
-# Optional: switch DB_CONNECTION to mysql in .env
-touch database/database.sqlite      # if using sqlite
-php artisan migrate --seed
+touch database/database.sqlite        # SQLite for local dev; or configure MySQL in .env
+php artisan migrate --seed            # seeds the admin from ADMIN_EMAIL / ADMIN_PASSWORD
 php artisan serve --host=127.0.0.1 --port=8000
 ```
 
-The seeder creates a default super-admin you can log in with:
+In a local environment, if `ADMIN_EMAIL`/`ADMIN_PASSWORD` are unset the seeder creates
+`admin@example.com` / `password-change-me`. **In production no default admin is ever created** —
+set the two variables or run:
 
-| Email | Password |
-| ----- | -------- |
-| `admin@iubat.edu` | `admin12345` |
+```bash
+php artisan marathon:create-admin you@example.com
+```
 
-### 2. Frontend
-
-Requires Node 20+ and npm.
+### 2. Frontend (Node 20+)
 
 ```bash
 cd frontend
-cp .env.example .env       # contains VITE_API_BASE_URL
+cp .env.example .env     # VITE_API_BASE_URL
 npm install
-npm run dev                # Starts on http://localhost:5173
+npm run dev              # http://localhost:5173  (admin: /admin/login)
 ```
 
-Open http://localhost:5173. The admin panel lives at `/admin/login`.
+### 3. Tests
+
+```bash
+cd backend && php artisan test      # registration, payments, results, certificates, auth
+cd frontend && npm run lint && npm run build
+```
+
+CI (`.github/workflows/ci.yml`) runs all of the above on every pull request.
 
 ## Configuration
 
-All marathon-specific knobs are surfaced as environment variables (see `backend/.env.example`):
+Everything event-specific is an environment variable (see `backend/.env.example`):
 
 | Variable | Purpose |
 | -------- | ------- |
-| `MARATHON_TOTAL_SLOTS` | Hard cap on participants (default 400) |
-| `MARATHON_HOLD_MINUTES` | Slot reservation TTL during checkout |
-| `MARATHON_FEE_STUDENT`, `MARATHON_FEE_FACULTY` | Per-category fees |
-| `MARATHON_BIB_PREFIX`, `MARATHON_BIB_PAD_LENGTH` | BIB format (default `IUB0001`) |
-| `MARATHON_VERIFY_URL` | Public certificate verification URL template (`{uuid}` placeholder) |
-| `MARATHON_RESULT_URL` | External results board URL embedded on the Results page |
-| `CORS_ALLOWED_ORIGINS` | Frontend origins allowed to call the API |
+| `MARATHON_EVENT_NAME`, `_DATE`, `_VENUE`, `_ORGANIZER`, `MARATHON_SUPPORT_EMAIL` | Shown across the site, emails and certificates |
+| `MARATHON_TOTAL_SLOTS`, `MARATHON_HOLD_MINUTES` | Capacity and checkout hold |
+| `MARATHON_FEE_STUDENT`, `MARATHON_FEE_FACULTY` | Per-category fees (BDT) |
+| `MARATHON_PAYMENT_MODE` | `manual` (production) or `simulated` (demo, refused in production) |
+| `MARATHON_BKASH_NUMBER`, `MARATHON_NAGAD_NUMBER` | Merchant numbers shown on the payment page |
+| `MARATHON_VERIFICATION_HOLD_HOURS` | How long a slot is kept while a TrxID awaits verification |
+| `MARATHON_CERT_REQUIRE_FINISH` | Only finishers (with a recorded time) get certificates |
+| `MARATHON_BIB_PREFIX`, `MARATHON_BIB_PAD_LENGTH` | BIB format (`IUB0001`) |
+| `MARATHON_VERIFY_URL` | Certificate QR target, `{uuid}` placeholder |
+| `MARATHON_RESULT_URL` | Optional external results link |
+| `ADMIN_EMAIL`, `ADMIN_PASSWORD` | First admin created by the seeder |
+| `CORS_ALLOWED_ORIGINS`, `SANCTUM_TOKEN_EXPIRATION` | API access control |
 
 ## Key API endpoints
 
 ```
 # Public
-GET    /api/event
-GET    /api/event/sponsors
-GET    /api/event/volunteers
-GET    /api/slots
+GET    /api/event                    GET /api/slots          GET /api/results
+GET    /api/event/sponsors           GET /api/event/volunteers
 POST   /api/registration
-POST   /api/payments/initiate
-POST   /api/payments/confirm
-GET    /api/payments/{transaction}
-GET    /api/certificates/lookup?query=...
-GET    /api/certificates/{uuid}/verify
-GET    /api/certificates/{uuid}/download
+GET    /api/payments/config
+POST   /api/payments/initiate        POST /api/payments/submit   (manual TrxID)
+POST   /api/payments/confirm         (simulated mode only)
+GET    /api/payments/{transaction}?token=…
+GET    /api/certificates/lookup?bib=…&phone=…
+GET    /api/certificates/{uuid}/verify | /download
 
-# Admin (Sanctum)
-POST   /api/admin/login
-POST   /api/admin/logout
-GET    /api/admin/me
-GET    /api/admin/dashboard
-GET    /api/admin/participants
-GET    /api/admin/participants/export
-GET    /api/admin/participants/{id}
-PATCH  /api/admin/participants/{id}
+# Admin (Sanctum bearer token)
+POST   /api/admin/login | /logout    GET /api/admin/me | /dashboard
+GET    /api/admin/participants[/export|/{id}]   PATCH /api/admin/participants/{id}
 POST   /api/admin/participants/{id}/verify-payment
-POST   /api/admin/notifications/bulk
-GET|POST|PUT|DELETE /api/admin/sponsors
-GET|POST|PUT|DELETE /api/admin/volunteers
+POST   /api/admin/results/import     POST /api/admin/notifications/bulk
+apiResource /api/admin/sponsors, /api/admin/volunteers
 ```
 
 ## Edge cases handled
 
-- **Duplicate registrations** → unique constraint on email & phone, surfaced as 409 errors.
-- **Concurrent registrations** → `Serializable` transaction + slot recount inside the lock.
-- **Slot full at checkout** → 410 with current slot summary; user can retry.
-- **Payment failure after slot hold** → participant reverts to `reserved`, slot remains held until original expiry.
-- **Stale slot holds** → cleaned up automatically on every slot read.
-- **Repeated payment confirmation** → idempotent; safe to retry.
-- **Mail server down** → notification failures logged but never propagate to the user flow.
-- **BIB collisions** → row-level lock + unique check + auto-retry.
+- **Duplicate registrations** → blocked while an active registration exists for the email/phone (409). Expired or cancelled holds don't block a retry.
+- **Concurrent registrations** → transaction + recount inside the lock; BIB assignment retries on unique-index collisions.
+- **Slot full** → 410 with the current slot summary.
+- **Self-confirming payments** → the public confirm endpoint is closed outside simulated mode, and each call must present the registration's private token.
+- **Reused TrxID** → rejected (409).
+- **Late verification of an expired hold** → only confirmed if capacity remains.
+- **Repeated payment confirmation** → idempotent.
+- **Mail server down** → logged, never surfaced to the runner.
 
-## Production deployment notes
+## Production checklist
 
-- Switch `DB_CONNECTION=mysql` and configure DB credentials.
-- Configure a real mailer (`MAIL_MAILER=smtp`, `MAIL_HOST=…`).
-- Build the frontend (`npm run build`) and serve the contents of `frontend/dist` from your CDN / web server.
-- Point `VITE_API_BASE_URL` to your public API URL before building.
-- Update `CORS_ALLOWED_ORIGINS` and `SANCTUM_STATEFUL_DOMAINS` to your production frontend origin.
-- Run `php artisan storage:link` if you start storing uploaded sponsor logos / volunteer photos.
-- Cache config & routes for performance: `php artisan config:cache && php artisan route:cache`.
+- `APP_ENV=production`, `APP_DEBUG=false`, a real `APP_KEY`, MySQL, and `MARATHON_PAYMENT_MODE=manual`.
+- Set `MARATHON_BKASH_NUMBER` / `MARATHON_NAGAD_NUMBER`, `MARATHON_SUPPORT_EMAIL`, a real mailer, and `MARATHON_VERIFY_URL` to your public site.
+- Create the admin with `php artisan marathon:create-admin` (≥ 12-character password).
+- Set `CORS_ALLOWED_ORIGINS` to the frontend origin; serve everything over HTTPS.
+- `npm run build` in `frontend/` with `VITE_API_BASE_URL` pointing at the API; serve `dist/` with an SPA fallback to `index.html`.
+- Schedule `php artisan schedule:run` if you add jobs; cache with `php artisan config:cache route:cache`.
+- Replace the placeholder race-pack copy on the home page and FAQ with what you will actually deliver.
 
 ## License
 
-MIT — see `LICENSE` (add one before publishing).
+MIT — see [LICENSE](LICENSE).

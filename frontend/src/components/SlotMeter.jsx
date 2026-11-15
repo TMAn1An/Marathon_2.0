@@ -22,10 +22,14 @@ export default function SlotMeter({ refreshInterval = 15000, compact = false }) 
     }
   }, [refreshInterval])
 
-  const total = slots?.total ?? 400
+  const total = slots?.total ?? 0
   const used = slots?.used ?? 0
   const available = slots?.available ?? total
-  const percent = Math.min(100, Math.round((used / total) * 100))
+  const percent = total ? Math.min(100, Math.round((used / total) * 100)) : 0
+
+  if (!slots) {
+    return <div className={compact ? 'skeleton h-9 rounded-lg' : 'skeleton h-40 rounded-xl'} aria-hidden />
+  }
 
   if (compact) {
     return (
@@ -48,6 +52,11 @@ export default function SlotMeter({ refreshInterval = 15000, compact = false }) 
       </div>
       <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-slate-100">
         <div
+          role="progressbar"
+          aria-label="Slots filled"
+          aria-valuenow={percent}
+          aria-valuemin={0}
+          aria-valuemax={100}
           className="h-full bg-action-500 transition-all"
           style={{ width: `${percent}%` }}
         />

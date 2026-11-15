@@ -1,9 +1,8 @@
-import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { eventApi } from '../api/endpoints'
 import CountdownClock from '../components/CountdownClock'
 import SlotMeter from '../components/SlotMeter'
-import SafeImage from '../components/SafeImage'
+import { useEvent } from '../context/EventContext'
+import { formatCurrency, formatDate } from '../utils/format'
 import SponsorMarquee from '../components/SponsorMarquee'
 
 const benefits = [
@@ -51,47 +50,12 @@ const benefits = [
   },
 ]
 
-const testimonials = [
-  {
-    quote:
-      'Best organised university run I have ever been to. The route is fast, the volunteers are everywhere, and the post-race breakfast was unreal.',
-    name: 'Sumaiya Rahman',
-    role: 'CSE 2023 · 10K finisher',
-    photo: 'https://i.pravatar.cc/120?img=47',
-  },
-  {
-    quote:
-      'I signed up to support my students and ended up running it myself. Could not have asked for a better Saturday morning on campus.',
-    name: 'Dr. Anwar Hossain',
-    role: 'Faculty, CSE Department',
-    photo: 'https://i.pravatar.cc/120?img=12',
-  },
-  {
-    quote:
-      'Smooth registration, clear instructions, real BIBs, real chip-timed results. It actually feels like a proper city race.',
-    name: 'Tanvir Ahmed',
-    role: 'Alumni · 10K finisher',
-    photo: 'https://i.pravatar.cc/120?img=33',
-  },
-]
-
-const partnerLogos = [
-  { src: 'https://placehold.co/160x60/eefdf2/0d723c?text=IUBAT', alt: 'IUBAT logo' },
-  { src: 'https://placehold.co/160x60/eefdf2/0d723c?text=CSE+Dept', alt: 'CSE Department logo' },
-  { src: 'https://placehold.co/160x60/eefdf2/0d723c?text=Sports+Club', alt: 'IUBAT Sports Club logo' },
-  { src: 'https://placehold.co/160x60/eefdf2/0d723c?text=Alumni', alt: 'IUBAT Alumni Network logo' },
-]
-
 export default function HomePage() {
-  const [event, setEvent] = useState(null)
-
-  useEffect(() => {
-    eventApi.info().then(({ data }) => setEvent(data?.data?.event)).catch(() => {})
-  }, [])
-
-  const date = event?.date
-  const venue = event?.venue || 'IUBAT Main Campus, Uttara, Dhaka'
-  const eventName = event?.name || 'IUBAT CSE 10K Marathon'
+  const { event, fees, slots, holdMinutes } = useEvent()
+  const date = event.date
+  const venue = event.venue
+  const eventName = event.name
+  const total = slots?.total
 
   return (
     <div>
@@ -111,7 +75,7 @@ export default function HomePage() {
         <div className="relative mx-auto max-w-7xl px-4 py-14 lg:py-20 grid gap-10 lg:grid-cols-12 items-center">
           <div className="lg:col-span-7">
             <span className="badge-amber text-[11px]">
-              {date ? `${date}` : 'Race day · 12 Dec 2026'} &nbsp;·&nbsp; {venue}
+              {formatDate(date, { dateStyle: 'long' })} &nbsp;·&nbsp; {venue}
             </span>
 
             <h1 className="mt-4 text-4xl md:text-5xl lg:text-[3.5rem] font-bold leading-tight text-white">
@@ -122,7 +86,7 @@ export default function HomePage() {
 
             <p className="mt-4 max-w-xl text-base lg:text-lg text-brand-50/90">
               A community 10K hosted by the IUBAT Department of Computer Science &amp; Engineering.
-              <strong className="text-white"> 400 runners.</strong> One starting line. One finisher medal with your name on it.
+              <strong className="text-white"> {total ?? 'Limited'} runners.</strong> One starting line. One finisher medal with your name on it.
             </p>
 
             <div className="mt-6 flex flex-wrap gap-3">
@@ -156,21 +120,10 @@ export default function HomePage() {
                 IUBAT &middot; School of Computer Science &amp; Engineering
               </p>
               <p className="mt-1 text-sm text-slate-600 max-w-xl">
-                Hosted on the IUBAT Main Campus and run by the CSE Department in partnership with the IUBAT Sports Club, the Alumni Network, and certified race-day volunteers.
+                Hosted on the IUBAT Main Campus and run by the CSE Department with the help of student and faculty volunteers.
               </p>
             </div>
-            <div className="flex flex-wrap items-center gap-6 md:justify-end">
-              {partnerLogos.map((l) => (
-                <SafeImage
-                  key={l.alt}
-                  src={l.src}
-                  alt={l.alt}
-                  width={140}
-                  height={52}
-                  className="h-12 w-auto object-contain opacity-90"
-                />
-              ))}
-            </div>
+            <Link to="/organizers" className="btn-outline md:justify-self-end">Meet the team</Link>
           </div>
         </div>
       </section>
@@ -203,57 +156,27 @@ export default function HomePage() {
       </section>
 
       {/* ============================================================= */}
-      {/* SOCIAL PROOF — runner count + testimonials                     */}
+      {/* AT A GLANCE — facts straight from the event configuration     */}
       {/* ============================================================= */}
       <section className="bg-white py-16">
         <div className="mx-auto max-w-7xl px-4">
-          <div className="grid gap-10 lg:grid-cols-[1fr_2fr] items-start">
-            <div>
-              <span className="badge-amber">Community</span>
-              <h2 className="mt-3 text-3xl md:text-4xl">Runners trust the IUBAT 10K</h2>
-              <p className="mt-2 text-slate-600">
-                Hundreds of students, faculty members and alumni have crossed our finish line. Here is what a few of them had to say after race day.
-              </p>
-
-              <dl className="mt-6 grid grid-cols-3 gap-3 text-center">
-                <div className="card py-4">
-                  <dt className="text-xs uppercase text-slate-500">Runners</dt>
-                  <dd className="text-2xl font-bold text-brand-900 mt-1">400</dd>
-                </div>
-                <div className="card py-4">
-                  <dt className="text-xs uppercase text-slate-500">Volunteers</dt>
-                  <dd className="text-2xl font-bold text-brand-900 mt-1">60+</dd>
-                </div>
-                <div className="card py-4">
-                  <dt className="text-xs uppercase text-slate-500">Distance</dt>
-                  <dd className="text-2xl font-bold text-brand-900 mt-1">10 KM</dd>
-                </div>
-              </dl>
-            </div>
-
-            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-              {testimonials.map((t) => (
-                <figure key={t.name} className="card p-5 flex flex-col gap-4">
-                  <blockquote className="text-sm text-slate-700 leading-relaxed">
-                    &ldquo;{t.quote}&rdquo;
-                  </blockquote>
-                  <figcaption className="mt-auto flex items-center gap-3">
-                    <SafeImage
-                      src={t.photo}
-                      alt={`${t.name} portrait`}
-                      width={44}
-                      height={44}
-                      className="h-11 w-11 rounded-full object-cover"
-                    />
-                    <div>
-                      <div className="text-sm font-semibold text-brand-900">{t.name}</div>
-                      <div className="text-xs text-slate-500">{t.role}</div>
-                    </div>
-                  </figcaption>
-                </figure>
-              ))}
-            </div>
+          <div className="max-w-2xl">
+            <span className="badge-amber">At a glance</span>
+            <h2 className="mt-3 text-3xl md:text-4xl">Race day in numbers</h2>
           </div>
+          <dl className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {[
+              ['Distance', '10 KM'],
+              ['Runner capacity', total ?? '—'],
+              ['Student fee', formatCurrency(fees.student)],
+              ['Faculty fee', formatCurrency(fees.faculty)],
+            ].map(([label, value]) => (
+              <div key={label} className="card p-5 text-center">
+                <dt className="text-xs uppercase tracking-wide text-slate-500">{label}</dt>
+                <dd className="mt-1 text-3xl font-bold text-brand-900">{value}</dd>
+              </div>
+            ))}
+          </dl>
         </div>
       </section>
 
@@ -269,9 +192,9 @@ export default function HomePage() {
         <div className="mx-auto max-w-7xl px-4 grid gap-8 lg:grid-cols-3 items-center">
           <div className="lg:col-span-2">
             <span className="badge-orange bg-action-500 text-white">Limited capacity</span>
-            <h2 className="mt-3 text-3xl md:text-4xl text-white">Only 400 BIBs. Don&rsquo;t miss yours.</h2>
+            <h2 className="mt-3 text-3xl md:text-4xl text-white">{total ? `Only ${total} BIBs.` : 'Limited BIBs.'} Don&rsquo;t miss yours.</h2>
             <p className="mt-3 text-brand-50/90 max-w-2xl">
-              Registration closes when slot 400 is taken. Reserve a slot, finish payment within 10 minutes, and your BIB is locked in.
+              Registration closes when the last slot is taken. Reserve a slot, finish payment, and your BIB is locked in.
             </p>
 
             <div className="mt-5">
@@ -287,7 +210,7 @@ export default function HomePage() {
           <div className="text-center lg:text-right">
             <Link to="/register" className="btn-cta">Reserve my slot</Link>
             <p className="mt-3 text-xs text-brand-100/80">
-              Slot is held for 10 minutes while you complete payment.
+              Slot is held for {holdMinutes} minutes while you complete payment.
             </p>
           </div>
         </div>
@@ -299,10 +222,10 @@ export default function HomePage() {
       <section className="bg-brand-50 py-16">
         <div className="mx-auto max-w-3xl px-4 text-center">
           <h2 className="text-3xl md:text-4xl">
-            Don&rsquo;t miss your chance to be part of the IUBAT Marathon.
+            Don&rsquo;t miss your chance to be part of the {eventName}.
           </h2>
           <p className="mt-4 text-slate-600">
-            Lace up. Show up. Run with the CSE department, your batch and a few hundred new friends — all on one Saturday morning.
+            Lace up. Show up. Run with the CSE department, your batch and hundreds of new friends — all on one morning.
           </p>
           <div className="mt-8 flex flex-wrap justify-center gap-3">
             <Link to="/register" className="btn-cta">Register Now</Link>

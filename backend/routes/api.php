@@ -4,12 +4,14 @@ use App\Http\Controllers\Api\Admin\AuthController as AdminAuthController;
 use App\Http\Controllers\Api\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Api\Admin\NotificationController as AdminNotificationController;
 use App\Http\Controllers\Api\Admin\ParticipantController as AdminParticipantController;
+use App\Http\Controllers\Api\Admin\ResultsController as AdminResultsController;
 use App\Http\Controllers\Api\Admin\SponsorController as AdminSponsorController;
 use App\Http\Controllers\Api\Admin\VolunteerController as AdminVolunteerController;
 use App\Http\Controllers\Api\Public\CertificateController as PublicCertificateController;
 use App\Http\Controllers\Api\Public\EventInfoController as PublicEventInfoController;
 use App\Http\Controllers\Api\Public\PaymentController as PublicPaymentController;
 use App\Http\Controllers\Api\Public\RegistrationController as PublicRegistrationController;
+use App\Http\Controllers\Api\Public\ResultsController as PublicResultsController;
 use App\Http\Controllers\Api\Public\SlotController as PublicSlotController;
 use Illuminate\Support\Facades\Route;
 
@@ -25,17 +27,20 @@ Route::prefix('event')->group(function () {
 });
 
 Route::get('/slots', [PublicSlotController::class, 'show']);
+Route::get('/results', [PublicResultsController::class, 'index']);
+Route::get('/payments/config', [PublicPaymentController::class, 'config']);
 
 Route::middleware('throttle:30,1')->group(function () {
     Route::post('/registration', [PublicRegistrationController::class, 'store']);
     Route::post('/payments/initiate', [PublicPaymentController::class, 'initiate']);
+    Route::post('/payments/submit', [PublicPaymentController::class, 'submit']);
     Route::post('/payments/confirm', [PublicPaymentController::class, 'confirm']);
 });
 
 Route::get('/payments/{transaction}', [PublicPaymentController::class, 'show']);
 
 Route::prefix('certificates')->group(function () {
-    Route::get('/lookup', [PublicCertificateController::class, 'lookup']);
+    Route::get('/lookup', [PublicCertificateController::class, 'lookup'])->middleware('throttle:10,1');
     Route::get('/{uuid}/verify', [PublicCertificateController::class, 'verify']);
     Route::get('/{uuid}/download', [PublicCertificateController::class, 'download']);
 });
@@ -59,6 +64,7 @@ Route::prefix('admin')->group(function () {
         Route::patch('/participants/{participant}', [AdminParticipantController::class, 'update']);
         Route::post('/participants/{participant}/verify-payment', [AdminParticipantController::class, 'verifyPayment']);
 
+        Route::post('/results/import', [AdminResultsController::class, 'import']);
         Route::post('/notifications/bulk', [AdminNotificationController::class, 'bulk']);
 
         Route::apiResource('sponsors', AdminSponsorController::class);

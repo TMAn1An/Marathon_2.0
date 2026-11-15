@@ -1,16 +1,18 @@
 import { Link, useLocation } from 'react-router-dom'
 import { formatCurrency } from '../utils/format'
+import { useEvent } from '../context/EventContext'
 
 export default function PaymentSuccessPage() {
   const { state } = useLocation()
-  const participant = state?.participant
+  const { event } = useEvent()
   const payment = state?.payment
+  const participant = payment?.participant
 
   if (!participant) {
     return (
       <div className="mx-auto max-w-2xl px-4 py-20 text-center">
-        <h1 className="text-3xl">No payment in progress</h1>
-        <p className="mt-3 text-slate-600">Visit the registration page to start your registration.</p>
+        <h1 className="text-3xl">Nothing to show here</h1>
+        <p className="mt-3 text-slate-600">Start from the registration page.</p>
         <Link to="/register" className="btn-primary mt-6 inline-flex">Go to registration</Link>
       </div>
     )
@@ -19,40 +21,33 @@ export default function PaymentSuccessPage() {
   return (
     <div className="mx-auto max-w-3xl px-4 py-16">
       <div className="card p-8 text-center">
-        <div className="mx-auto h-14 w-14 grid place-items-center rounded-full bg-emerald-100 text-emerald-600 text-3xl">✓</div>
-        <h1 className="mt-4 text-3xl">You're in!</h1>
-        <p className="mt-2 text-slate-600">
-          Welcome to the IUBAT CSE 10K Marathon, {participant.full_name}.
-        </p>
+        <div className="mx-auto grid h-14 w-14 place-items-center rounded-full bg-emerald-100 text-3xl text-emerald-600" aria-hidden>✓</div>
+        <h1 className="mt-4 text-3xl">You&rsquo;re in!</h1>
+        <p className="mt-2 text-slate-600">Welcome to the {event.name}, {participant.full_name}.</p>
 
-        <div className="mt-6 rounded-lg bg-brand-50 p-5 text-left">
-          <div className="grid gap-3 sm:grid-cols-2">
-            <div>
-              <p className="text-xs uppercase tracking-wide text-slate-500">BIB Number</p>
-              <p className="text-2xl font-bold text-brand-900">{participant.bib_number || '—'}</p>
-            </div>
-            <div>
-              <p className="text-xs uppercase tracking-wide text-slate-500">Status</p>
-              <p className="text-brand-900 font-semibold capitalize">{participant.status}</p>
-            </div>
-            <div>
-              <p className="text-xs uppercase tracking-wide text-slate-500">Transaction</p>
-              <p className="font-mono text-sm text-slate-700">{payment?.transaction_id}</p>
-            </div>
-            <div>
-              <p className="text-xs uppercase tracking-wide text-slate-500">Paid</p>
-              <p className="text-slate-700">{formatCurrency(payment?.amount)}</p>
-            </div>
+        <dl className="mt-6 grid gap-4 rounded-lg bg-brand-50 p-5 text-left sm:grid-cols-2">
+          <div>
+            <dt className="text-xs uppercase tracking-wide text-slate-500">BIB number</dt>
+            <dd className="text-2xl font-bold text-brand-900">{participant.bib_number || '—'}</dd>
           </div>
-        </div>
+          <div>
+            <dt className="text-xs uppercase tracking-wide text-slate-500">Paid</dt>
+            <dd className="text-slate-700">{formatCurrency(payment.amount)}</dd>
+          </div>
+          <div className="sm:col-span-2">
+            <dt className="text-xs uppercase tracking-wide text-slate-500">Transaction</dt>
+            <dd className="font-mono text-sm text-slate-700">{payment.transaction_id}</dd>
+          </div>
+        </dl>
 
         <p className="mt-6 text-sm text-slate-600">
-          A confirmation email is on the way. You can download your finisher certificate here after the race.
+          A confirmation email is on its way. Keep your BIB handy — you will need it, with your phone number,
+          to download your certificate after the race.
         </p>
 
         <div className="mt-6 flex flex-wrap justify-center gap-3">
           <Link to="/" className="btn-outline">Back to home</Link>
-          <Link to="/certificate" className="btn-primary">Open certificate page</Link>
+          <Link to="/registration-info" className="btn-primary">Race-day info</Link>
         </div>
       </div>
     </div>

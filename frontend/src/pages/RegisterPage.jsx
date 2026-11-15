@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom'
 import SlotMeter from '../components/SlotMeter'
 import { registrationApi } from '../api/endpoints'
 import { pickErrorMessage } from '../api/client'
+import { useEvent } from '../context/EventContext'
+import Alert from '../components/Alert'
 
 const tShirtSizes = ['XS', 'S', 'M', 'L', 'XL', 'XXL']
 
@@ -18,6 +20,7 @@ const initial = {
 
 export default function RegisterPage() {
   const navigate = useNavigate()
+  const { event, holdMinutes } = useEvent()
   const [form, setForm] = useState(initial)
   const [errors, setErrors] = useState({})
   const [error, setError] = useState('')
@@ -33,9 +36,9 @@ export default function RegisterPage() {
     const e = {}
     if (form.full_name.trim().length < 3) e.full_name = 'Please enter your full name.'
     if (!form.university_id) e.university_id = 'University ID is required.'
-    if (!/^\+?[0-9 -]{7,20}$/.test(form.phone)) e.phone = 'Please enter a valid phone number.'
+    if (!/^\+?[0-9 -]{7,18}$/.test(form.phone)) e.phone = 'Please enter a valid phone number.'
     if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(form.email)) e.email = 'Please enter a valid email.'
-    if (!/^\+?[0-9 -]{7,20}$/.test(form.emergency_contact)) e.emergency_contact = 'Please enter a valid emergency contact number.'
+    if (!/^\+?[0-9 -]{7,18}$/.test(form.emergency_contact)) e.emergency_contact = 'Please enter a valid emergency contact number.'
     setErrors(e)
     return Object.keys(e).length === 0
   }
@@ -49,7 +52,9 @@ export default function RegisterPage() {
       const { data } = await registrationApi.register(form)
       const participant = data?.data?.participant
       const fee = data?.data?.fee
-      navigate('/payment', { state: { participant, fee, holdExpiresAt: data?.data?.hold_expires_at } })
+      const state = { participant, fee, holdExpiresAt: data?.data?.hold_expires_at }
+      try { sessionStorage.setItem('marathon-checkout', JSON.stringify(state)) } catch { /* private mode */ }
+      navigate('/payment', { state })
     } catch (err) {
       setError(pickErrorMessage(err))
     } finally {
@@ -61,7 +66,7 @@ export default function RegisterPage() {
     <div className="mx-auto max-w-4xl px-4 py-14">
       <h1 className="text-4xl">Register</h1>
       <p className="mt-3 text-slate-600">
-        Reserve your slot. Once you submit this form, your slot is held for 10&nbsp;minutes while
+        Reserve your slot. Once you submit this form, your slot is held for {holdMinutes}&nbsp;minutes while
         you complete payment.
       </p>
 
@@ -71,13 +76,13 @@ export default function RegisterPage() {
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
                 <label className="label" htmlFor="full_name">Full name</label>
-                <input id="full_name" name="full_name" value={form.full_name} onChange={onChange}
+                <input id="full_name" name="full_name" autoComplete="name" required value={form.full_name} onChange={onChange}
                   className="input" placeholder="Your name as on ID" />
                 {errors.full_name && <p className="mt-1 text-xs text-rose-600">{errors.full_name}</p>}
               </div>
               <div>
                 <label className="label" htmlFor="university_id">University ID</label>
-                <input id="university_id" name="university_id" value={form.university_id} onChange={onChange}
+                <input id="university_id" name="university_id" required value={form.university_id} onChange={onChange}
                   className="input" placeholder="e.g. 22203037" />
                 {errors.university_id && <p className="mt-1 text-xs text-rose-600">{errors.university_id}</p>}
               </div>
@@ -102,13 +107,13 @@ export default function RegisterPage() {
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
                 <label className="label" htmlFor="phone">Phone</label>
-                <input id="phone" name="phone" value={form.phone} onChange={onChange}
+                <input id="phone" name="phone" type="tel" autoComplete="tel" inputMode="tel" required value={form.phone} onChange={onChange}
                   className="input" placeholder="+8801XXXXXXXXX" />
                 {errors.phone && <p className="mt-1 text-xs text-rose-600">{errors.phone}</p>}
               </div>
               <div>
                 <label className="label" htmlFor="email">Email</label>
-                <input id="email" name="email" type="email" value={form.email} onChange={onChange}
+                <input id="email" name="email" type="email" autoComplete="email" required value={form.email} onChange={onChange}
                   className="input" placeholder="you@iubat.edu" />
                 {errors.email && <p className="mt-1 text-xs text-rose-600">{errors.email}</p>}
               </div>
@@ -116,15 +121,15 @@ export default function RegisterPage() {
 
             <div>
               <label className="label" htmlFor="emergency_contact">Emergency contact (number)</label>
-              <input id="emergency_contact" name="emergency_contact" value={form.emergency_contact} onChange={onChange}
+              <input id="emergency_contact" name="emergency_contact" type="tel" inputMode="tel" required value={form.emergency_contact} onChange={onChange}
                 className="input" placeholder="Phone of a parent or guardian" />
               {errors.emergency_contact && <p className="mt-1 text-xs text-rose-600">{errors.emergency_contact}</p>}
             </div>
 
-            {error && <div className="rounded-md bg-rose-50 px-4 py-3 text-sm text-rose-700">{error}</div>}
+            <Alert>{error}</Alert>
 
             <div className="flex items-center justify-between">
-              <p className="text-xs text-slate-500">Your slot will be held for 10 minutes after submission.</p>
+              <p className="text-xs text-slate-500">Your slot will be held for {holdMinutes} minutes after submission.</p>
               <button type="submit" disabled={loading} className="btn-primary">
                 {loading ? 'Reserving…' : 'Reserve my slot'}
               </button>
@@ -137,7 +142,7 @@ export default function RegisterPage() {
           <div className="card mt-4 p-5 text-sm text-slate-600">
             <h3 className="text-base">Need help?</h3>
             <p className="mt-2">
-              Email <a className="text-brand-700 underline" href="mailto:marathon@iubat.edu">marathon@iubat.edu</a> if
+              Email <a className="text-brand-700 underline" href={`mailto:${event.support_email}`}>{event.support_email}</a> if
               you run into any issues during registration.
             </p>
           </div>

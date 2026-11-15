@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link, NavLink } from 'react-router-dom'
+import { Link, NavLink, useLocation } from 'react-router-dom'
 
 const links = [
   { to: '/', label: 'Home' },
@@ -15,6 +15,12 @@ const links = [
 
 export default function Navbar() {
   const [open, setOpen] = useState(false)
+  const { pathname } = useLocation()
+  const [lastPath, setLastPath] = useState(pathname)
+  if (pathname !== lastPath) {
+    setLastPath(pathname)
+    setOpen(false)
+  }
 
   return (
     <header className="sticky top-0 z-30 border-b border-brand-100 bg-white/90 backdrop-blur">
@@ -56,14 +62,16 @@ export default function Navbar() {
           type="button"
           className="lg:hidden rounded-md p-2 text-slate-600 hover:bg-slate-100"
           onClick={() => setOpen((v) => !v)}
-          aria-label="Toggle menu"
+          aria-label={open ? 'Close menu' : 'Open menu'}
+          aria-expanded={open}
+          aria-controls="mobile-menu"
         >
           <svg width="22" height="22" viewBox="0 0 20 20" fill="currentColor"><path d="M3 5h14v2H3zM3 9h14v2H3zM3 13h14v2H3z"/></svg>
         </button>
       </div>
 
       {open && (
-        <div className="lg:hidden border-t border-slate-100 bg-white px-4 py-3 space-y-1">
+        <div id="mobile-menu" className="lg:hidden border-t border-slate-100 bg-white px-4 py-3 space-y-1">
           {links.map((l) => (
             <NavLink
               key={l.to}
