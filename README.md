@@ -1,6 +1,6 @@
-# IUBAT CSE 10K Marathon Management System
+# Marathon Management System
 
-A complete management system for the IUBAT CSE 10K Marathon. Built with **Laravel 13** + **MySQL** for the backend API and **React 19** + **Vite** + **Tailwind CSS** for the frontend.
+A complete, white-label management system for community running events (5K, 10K, half-marathon…): registration, slot control, payments, BIBs, results and certificates. Built with **Laravel 13** + **MySQL** for the backend API and **React 19** + **Vite** + **Tailwind CSS** for the frontend.
 
 ## Features
 
@@ -21,14 +21,14 @@ A complete management system for the IUBAT CSE 10K Marathon. Built with **Larave
   for up to 48 h while verification is pending. A TrxID can only be used once.
 - **Simulated checkout (demo only):** enabled with `MARATHON_PAYMENT_MODE=simulated`; the API
   refuses it when `APP_ENV=production`, so nobody can mark themselves as paid on a live site
-- Sequential BIB numbers (`IUB0001`, `IUB0002`, …) assigned on confirmation
+- Sequential BIB numbers (`RUN0001`, `RUN0002`, …) assigned on confirmation
 - Confirmation email + mock SMS, logged to the database; mail failures never break registration
 - Public checkout uses an unguessable per-registration token; no email/phone is ever returned
   by public endpoints
 
 ### Results & certificates
 - Admins import finishing times (`BIB,time` CSV or paste) or edit one runner at a time
-- Public results board with overall / student / faculty ranking and search
+- Public results board with overall and per-category ranking and search
 - Certificates unlock once a finish time exists (`MARATHON_CERT_REQUIRE_FINISH`), and are looked up
   with **BIB + registered phone** so other people's certificates can't be enumerated
 - DOMPDF A4 certificate with rank, finish time and a QR code to a public verification page
@@ -101,14 +101,16 @@ Everything event-specific is an environment variable (see `backend/.env.example`
 
 | Variable | Purpose |
 | -------- | ------- |
-| `MARATHON_EVENT_NAME`, `_DATE`, `_VENUE`, `_ORGANIZER`, `MARATHON_SUPPORT_EMAIL` | Shown across the site, emails and certificates |
+| `MARATHON_EVENT_NAME`, `_DATE`, `_VENUE`, `_ORGANIZER`, `MARATHON_SUPPORT_EMAIL` | Everything is white-label: name, date, venue and organizer appear across the site, emails and certificates |
 | `MARATHON_TOTAL_SLOTS`, `MARATHON_HOLD_MINUTES` | Capacity and checkout hold |
-| `MARATHON_FEE_STUDENT`, `MARATHON_FEE_FACULTY` | Per-category fees (BDT) |
+| `MARATHON_FEE_OPEN`, `MARATHON_FEE_STUDENT` | Fees for the default categories. Add or rename categories in `backend/config/marathon.php` (`categories`) |
+| `MARATHON_CURRENCY`, `MARATHON_DISTANCE_KM` | Currency code and race distance shown across the site and certificates |
+| `MARATHON_EVENT_TAGLINE`, `MARATHON_MAP_EMBED_URL` | Home/About tagline and the route-page map embed (empty hides the map) |
 | `MARATHON_PAYMENT_MODE` | `manual` (production) or `simulated` (demo, refused in production) |
 | `MARATHON_BKASH_NUMBER`, `MARATHON_NAGAD_NUMBER` | Merchant numbers shown on the payment page |
 | `MARATHON_VERIFICATION_HOLD_HOURS` | How long a slot is kept while a TrxID awaits verification |
 | `MARATHON_CERT_REQUIRE_FINISH` | Only finishers (with a recorded time) get certificates |
-| `MARATHON_BIB_PREFIX`, `MARATHON_BIB_PAD_LENGTH` | BIB format (`IUB0001`) |
+| `MARATHON_BIB_PREFIX`, `MARATHON_BIB_PAD_LENGTH` | BIB format (`RUN0001`) |
 | `MARATHON_VERIFY_URL` | Certificate QR target, `{uuid}` placeholder |
 | `MARATHON_RESULT_URL` | Optional external results link |
 | `ADMIN_EMAIL`, `ADMIN_PASSWORD` | First admin created by the seeder |
@@ -155,7 +157,8 @@ apiResource /api/admin/sponsors, /api/admin/volunteers
 - Set `CORS_ALLOWED_ORIGINS` to the frontend origin; serve everything over HTTPS.
 - `npm run build` in `frontend/` with `VITE_API_BASE_URL` pointing at the API; serve `dist/` with an SPA fallback to `index.html`.
 - Schedule `php artisan schedule:run` if you add jobs; cache with `php artisan config:cache route:cache`.
-- Replace the placeholder race-pack copy on the home page and FAQ with what you will actually deliver.
+- Review the template copy (race-pack list on the home page, FAQ answers, "what's included") and replace it with what you will actually deliver.
+- Payments use manual bKash/Nagad verification. To collect payments another way, add a gateway in `PaymentService`.
 
 ## License
 

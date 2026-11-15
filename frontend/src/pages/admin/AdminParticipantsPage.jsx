@@ -3,12 +3,7 @@ import { adminApi } from '../../api/endpoints'
 import { pickErrorMessage } from '../../api/client'
 import Alert from '../../components/Alert'
 import { formatDateTime, statusBadgeClass } from '../../utils/format'
-
-const categories = [
-  { value: '', label: 'All categories' },
-  { value: 'student', label: 'Students' },
-  { value: 'faculty', label: 'Faculty' },
-]
+import { useEvent } from '../../context/EventContext'
 
 const statuses = [
   { value: '', label: 'All statuses' },
@@ -19,6 +14,8 @@ const statuses = [
 ]
 
 export default function AdminParticipantsPage() {
+  const { categories: eventCategories, categoryLabel } = useEvent()
+  const categories = [{ value: '', label: 'All categories' }, ...eventCategories.map((c) => ({ value: c.id, label: c.label }))]
   const [data, setData] = useState({ data: [], current_page: 1, last_page: 1, total: 0 })
   const [filters, setFilters] = useState({ category: '', status: '', search: '' })
   const [page, setPage] = useState(1)
@@ -151,7 +148,7 @@ export default function AdminParticipantsPage() {
                   <div className="text-xs text-slate-500">{p.email}</div>
                   <div className="text-xs text-slate-500">{p.phone}</div>
                 </td>
-                <td className="px-4 py-3 capitalize">{p.category}</td>
+                <td className="px-4 py-3">{categoryLabel(p.category)}</td>
                 <td className="px-4 py-3"><span className={statusBadgeClass(p.status)}>{p.status}</span></td>
                 <td className="px-4 py-3">
                   {p.latest_payment ? (
@@ -204,8 +201,7 @@ export default function AdminParticipantsPage() {
                 <label className="label">Category</label>
                 <select className="input" value={editing.category}
                   onChange={(e) => setEditing({ ...editing, category: e.target.value })}>
-                  <option value="student">Student</option>
-                  <option value="faculty">Faculty</option>
+                  {eventCategories.map((c) => <option key={c.id} value={c.id}>{c.label}</option>)}
                 </select>
               </div>
               <div>

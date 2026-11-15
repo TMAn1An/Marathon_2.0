@@ -37,7 +37,7 @@ export default function AdminDashboardPage() {
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard label="Slot usage" value={`${slots.used}/${slots.total}`} hint={`${slots.available} remaining`} />
-        <StatCard label="Confirmed" value={p.confirmed} hint={`Students ${p.by_category.student} · Faculty ${p.by_category.faculty}`} />
+        <StatCard label="Confirmed" value={p.confirmed} hint={Object.values(p.by_category).map((c) => `${c.label} ${c.total}`).join(' · ')} />
         <StatCard label="Pending" value={p.pending} hint="In registration / payment funnel" />
         <StatCard label="Cancelled" value={p.cancelled} hint="Slot reservations released" />
       </div>

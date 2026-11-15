@@ -112,7 +112,7 @@ class NotificationService
             ."Thank you for registering for the {$event}!\n\n"
             ."Your registration is confirmed.\n"
             ."BIB Number: {$participant->bib_number}\n"
-            .'Category: '.ucfirst($participant->category)."\n"
+            .'Category: '.config("marathon.categories.{$participant->category}.label", ucfirst($participant->category))."\n"
             ."T-shirt size: {$participant->tshirt_size}\n\n"
             ."Event Date: {$date}\n"
             ."Venue: {$venue}\n\n"

@@ -7,7 +7,7 @@ return [
     | Marathon event configuration
     |--------------------------------------------------------------------------
     |
-    | These values control the runtime behaviour of the IUBAT CSE 10K Marathon
+    | These values control the runtime behaviour of the Marathon
     | Management System: total available slots, registration fees, slot
     | reservation TTL, BIB number prefix, and event metadata used in
     | certificates and emails.
@@ -15,12 +15,18 @@ return [
     */
 
     'event' => [
-        'name' => env('MARATHON_EVENT_NAME', 'IUBAT CSE 10K Marathon'),
+        'name' => env('MARATHON_EVENT_NAME', 'Community 10K Marathon'),
+        'tagline' => env('MARATHON_EVENT_TAGLINE', 'A community run for everyone: first-timers, club runners and families.'),
         'date' => env('MARATHON_EVENT_DATE', '2026-12-12'),
-        'venue' => env('MARATHON_EVENT_VENUE', 'IUBAT Main Campus, Uttara, Dhaka'),
-        'organizer' => env('MARATHON_EVENT_ORGANIZER', 'IUBAT CSE Department'),
+        'venue' => env('MARATHON_EVENT_VENUE', 'City Central Park'),
+        'organizer' => env('MARATHON_EVENT_ORGANIZER', 'Marathon Organizing Committee'),
+        // ISO 4217 code used when showing fees.
+        'currency' => env('MARATHON_CURRENCY', 'BDT'),
+        'distance_km' => (int) env('MARATHON_DISTANCE_KM', 10),
+        // OpenStreetMap / Google Maps *embed* URL for the route page. Leave empty to hide the map.
+        'map_embed_url' => env('MARATHON_MAP_EMBED_URL'),
         'result_url' => env('MARATHON_RESULT_URL'),
-        'support_email' => env('MARATHON_SUPPORT_EMAIL', 'marathon@iubat.edu'),
+        'support_email' => env('MARATHON_SUPPORT_EMAIL', 'hello@example.com'),
     ],
 
     'slots' => [
@@ -29,13 +35,24 @@ return [
         'hold_minutes' => (int) env('MARATHON_HOLD_MINUTES', 10),
     ],
 
-    'fees' => [
-        'student' => (int) env('MARATHON_FEE_STUDENT', 500),
-        'faculty' => (int) env('MARATHON_FEE_FACULTY', 1000),
+    /*
+    | Registration categories. The array key is stored on each participant;
+    | label and fee are what runners see. Add, remove or rename entries to
+    | suit your event (e.g. "open", "student", "veteran").
+    */
+    'categories' => [
+        'open' => [
+            'label' => env('MARATHON_CATEGORY_OPEN_LABEL', 'Open'),
+            'fee' => (int) env('MARATHON_FEE_OPEN', 800),
+        ],
+        'student' => [
+            'label' => env('MARATHON_CATEGORY_STUDENT_LABEL', 'Student'),
+            'fee' => (int) env('MARATHON_FEE_STUDENT', 500),
+        ],
     ],
 
     'bib' => [
-        'prefix' => env('MARATHON_BIB_PREFIX', 'IUB'),
+        'prefix' => env('MARATHON_BIB_PREFIX', 'RUN'),
         // Total length of the numeric component, zero-padded.
         'pad_length' => (int) env('MARATHON_BIB_PAD_LENGTH', 4),
     ],

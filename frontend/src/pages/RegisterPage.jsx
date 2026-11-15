@@ -4,14 +4,15 @@ import SlotMeter from '../components/SlotMeter'
 import { registrationApi } from '../api/endpoints'
 import { pickErrorMessage } from '../api/client'
 import { useEvent } from '../context/EventContext'
+import { formatCurrency } from '../utils/format'
 import Alert from '../components/Alert'
 
 const tShirtSizes = ['XS', 'S', 'M', 'L', 'XL', 'XXL']
 
 const initial = {
   full_name: '',
-  university_id: '',
-  category: 'student',
+  id_number: '',
+  category: '',
   phone: '',
   email: '',
   emergency_contact: '',
@@ -20,7 +21,7 @@ const initial = {
 
 export default function RegisterPage() {
   const navigate = useNavigate()
-  const { event, holdMinutes } = useEvent()
+  const { event, holdMinutes, categories } = useEvent()
   const [form, setForm] = useState(initial)
   const [errors, setErrors] = useState({})
   const [error, setError] = useState('')
@@ -35,7 +36,6 @@ export default function RegisterPage() {
   const validate = () => {
     const e = {}
     if (form.full_name.trim().length < 3) e.full_name = 'Please enter your full name.'
-    if (!form.university_id) e.university_id = 'University ID is required.'
     if (!/^\+?[0-9 -]{7,18}$/.test(form.phone)) e.phone = 'Please enter a valid phone number.'
     if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(form.email)) e.email = 'Please enter a valid email.'
     if (!/^\+?[0-9 -]{7,18}$/.test(form.emergency_contact)) e.emergency_contact = 'Please enter a valid emergency contact number.'
@@ -49,7 +49,7 @@ export default function RegisterPage() {
     if (!validate()) return
     setLoading(true)
     try {
-      const { data } = await registrationApi.register(form)
+      const { data } = await registrationApi.register({ ...form, category: form.category || categories[0]?.id })
       const participant = data?.data?.participant
       const fee = data?.data?.fee
       const state = { participant, fee, holdExpiresAt: data?.data?.hold_expires_at }
@@ -81,19 +81,18 @@ export default function RegisterPage() {
                 {errors.full_name && <p className="mt-1 text-xs text-rose-600">{errors.full_name}</p>}
               </div>
               <div>
-                <label className="label" htmlFor="university_id">University ID</label>
-                <input id="university_id" name="university_id" required value={form.university_id} onChange={onChange}
-                  className="input" placeholder="e.g. 22203037" />
-                {errors.university_id && <p className="mt-1 text-xs text-rose-600">{errors.university_id}</p>}
+                <label className="label" htmlFor="id_number">ID number <span className="font-normal text-brand-500">(optional)</span></label>
+                <input id="id_number" name="id_number" value={form.id_number} onChange={onChange}
+                  className="input" placeholder="Student, club or member ID" />
+                {errors.id_number && <p className="mt-1 text-xs text-rose-600">{errors.id_number}</p>}
               </div>
             </div>
 
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
                 <label className="label" htmlFor="category">Category</label>
-                <select id="category" name="category" value={form.category} onChange={onChange} className="input">
-                  <option value="student">Student</option>
-                  <option value="faculty">Faculty</option>
+                <select id="category" name="category" value={form.category || categories[0]?.id || ''} onChange={onChange} className="input">
+                  {categories.map((c) => <option key={c.id} value={c.id}>{c.label} — {formatCurrency(c.fee)}</option>)}
                 </select>
               </div>
               <div>
@@ -114,7 +113,7 @@ export default function RegisterPage() {
               <div>
                 <label className="label" htmlFor="email">Email</label>
                 <input id="email" name="email" type="email" autoComplete="email" required value={form.email} onChange={onChange}
-                  className="input" placeholder="you@iubat.edu" />
+                  className="input" placeholder="you@example.com" />
                 {errors.email && <p className="mt-1 text-xs text-rose-600">{errors.email}</p>}
               </div>
             </div>

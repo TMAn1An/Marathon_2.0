@@ -1,5 +1,6 @@
 import { Link, NavLink, Navigate, Outlet, useNavigate } from 'react-router-dom'
 import { useAdminAuth } from '../context/AdminAuthContext'
+import { useEvent } from '../context/EventContext'
 
 const links = [
   { to: '/admin', label: 'Dashboard', end: true },
@@ -12,6 +13,7 @@ const links = [
 
 export default function AdminLayout() {
   const { admin, loading, logout } = useAdminAuth()
+  const { event } = useEvent()
   const navigate = useNavigate()
 
   if (loading) {
@@ -31,7 +33,7 @@ export default function AdminLayout() {
     <div className="min-h-screen bg-slate-100">
       <aside className="fixed inset-y-0 left-0 z-20 hidden w-60 flex-col bg-brand-900 text-slate-200 lg:flex">
         <Link to="/admin" className="px-6 py-5 text-white">
-          <span className="block text-xs uppercase tracking-wider text-action-300">IUBAT</span>
+          <span className="block text-xs uppercase tracking-wider text-action-300">{event.name}</span>
           <span className="block text-lg font-semibold">Marathon Admin</span>
         </Link>
         <nav className="flex-1 space-y-1 px-3">
@@ -66,7 +68,7 @@ export default function AdminLayout() {
           <div className="flex items-center justify-between px-6 py-4">
             <div>
               <p className="text-xs uppercase tracking-wider text-slate-400">Admin</p>
-              <h2 className="text-lg font-semibold text-brand-900">IUBAT CSE 10K Dashboard</h2>
+              <h2 className="text-lg font-semibold text-brand-900">{event.name} · Dashboard</h2>
             </div>
             <Link to="/" className="text-sm text-brand-700 hover:underline">View public site →</Link>
           </div>

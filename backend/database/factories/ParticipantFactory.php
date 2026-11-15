@@ -14,7 +14,7 @@ class ParticipantFactory extends Factory
     {
         return [
             'full_name' => fake()->name(),
-            'university_id' => (string) fake()->unique()->numerify('2220####'),
+            'id_number' => (string) fake()->unique()->numerify('2220####'),
             'category' => 'student',
             'phone' => '+88017'.fake()->unique()->numerify('########'),
             'email' => fake()->unique()->safeEmail(),

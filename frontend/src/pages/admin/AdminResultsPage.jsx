@@ -52,7 +52,7 @@ export default function AdminResultsPage() {
         <h1 className="text-2xl">Race results</h1>
         <p className="mt-1 text-sm text-slate-600">
           Paste or upload finishing times as <code className="rounded bg-slate-100 px-1">BIB,time</code> lines
-          (e.g. <code className="rounded bg-slate-100 px-1">IUB0007,0:52:14</code>). Importing publishes the public
+          (e.g. <code className="rounded bg-slate-100 px-1">RUN0007,0:52:14</code>). Importing publishes the public
           results board and unlocks certificates for those runners. Re-importing a BIB overwrites its time.
         </p>
       </div>
@@ -65,7 +65,7 @@ export default function AdminResultsPage() {
         <div>
           <label htmlFor="rows" className="label">…or paste rows</label>
           <textarea id="rows" rows={10} className="input font-mono" value={text} onChange={(e) => setText(e.target.value)}
-            placeholder={'IUB0001,0:48:30\nIUB0002,0:51:02'} />
+            placeholder={'RUN0001,0:48:30\nRUN0002,0:51:02'} />
           <p className="mt-1 text-xs text-slate-500">{rows.length} row{rows.length === 1 ? '' : 's'} detected</p>
         </div>
         <Alert>{error}</Alert>

@@ -52,7 +52,7 @@ class RegistrationService
 
             return Participant::create([
                 'full_name' => $data['full_name'],
-                'university_id' => $data['university_id'],
+                'id_number' => $data['id_number'] ?? null,
                 'category' => $data['category'],
                 'phone' => $data['phone'],
                 'email' => $data['email'],

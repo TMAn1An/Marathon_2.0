@@ -58,7 +58,7 @@ class CertificateController extends Controller
         }
 
         $pdf = $this->certificates->renderPdf($participant);
-        $filename = 'iubat-marathon-certificate-'.($participant->bib_number ?? $participant->id).'.pdf';
+        $filename = 'marathon-certificate-'.($participant->bib_number ?? $participant->id).'.pdf';
 
         return response($pdf, 200, [
             'Content-Type' => 'application/pdf',
@@ -87,6 +87,7 @@ class CertificateController extends Controller
                 'full_name' => $participant->full_name,
                 'bib_number' => $participant->bib_number,
                 'category' => $participant->category,
+                'category_label' => config("marathon.categories.{$participant->category}.label", ucfirst($participant->category)),
                 'event' => config('marathon.event.name'),
                 'event_date' => config('marathon.event.date'),
                 'finish_time' => $participant->finish_time,

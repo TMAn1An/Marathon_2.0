@@ -29,7 +29,7 @@ export default function Navbar() {
     <header className="sticky top-3 z-40 px-3">
       <div className="mx-auto max-w-6xl rounded-full bg-white/95 px-3 py-2 shadow-lift ring-1 ring-brand-900/10 backdrop-blur-xl">
         <div className="flex items-center justify-between gap-2 pl-2">
-          <Link to="/" aria-label="IUBAT CSE 10K Marathon — home">
+          <Link to="/" aria-label="Home">
             <Logo />
           </Link>
 

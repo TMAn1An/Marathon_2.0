@@ -12,7 +12,7 @@ class RegistrationFlowTest extends TestCase
 
     private array $payload = [
         'full_name' => 'Rafi Ahmed',
-        'university_id' => '22203037',
+        'id_number' => '22203037',
         'category' => 'student',
         'phone' => '+880 1712-345678',
         'email' => 'Rafi@Example.com',
@@ -56,5 +56,27 @@ class RegistrationFlowTest extends TestCase
 
         $other = array_merge($this->payload, ['email' => 'b@example.com', 'phone' => '01922222222']);
         $this->postJson('/api/registration', $other)->assertStatus(410);
+    }
+
+    public function test_categories_come_from_config_and_set_the_fee(): void
+    {
+        config(['marathon.categories' => [
+            'elite' => ['label' => 'Elite', 'fee' => 1500],
+        ]]);
+
+        $this->postJson('/api/registration', array_merge($this->payload, ['category' => 'student']))
+            ->assertStatus(422);
+
+        $this->postJson('/api/registration', array_merge($this->payload, ['category' => 'elite']))
+            ->assertCreated()
+            ->assertJsonPath('data.fee', 1500)
+            ->assertJsonPath('data.participant.category_label', 'Elite');
+    }
+
+    public function test_id_number_is_optional(): void
+    {
+        unset($this->payload['id_number']);
+
+        $this->postJson('/api/registration', $this->payload)->assertCreated();
     }
 }

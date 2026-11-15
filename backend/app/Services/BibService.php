@@ -11,7 +11,7 @@ class BibService
     private const MAX_ATTEMPTS = 5;
 
     /**
-     * Assigns the next sequential BIB number (IUB0001, IUB0002, …) to a
+     * Assigns the next sequential BIB number (RUN0001, RUN0002, …) to a
      * participant. Idempotent: an existing BIB is returned unchanged.
      * The unique index is the final arbiter; a concurrent collision is
      * retried with a fresh candidate.

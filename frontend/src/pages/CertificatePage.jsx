@@ -38,7 +38,7 @@ export default function CertificatePage() {
           <div>
             <label className="label" htmlFor="bib">BIB number</label>
             <input id="bib" value={bib} onChange={(e) => setBib(e.target.value)} className="input uppercase"
-              placeholder="IUB0001" required autoComplete="off" />
+              placeholder="RUN0001" required autoComplete="off" />
           </div>
           <div>
             <label className="label" htmlFor="phone">Registered phone</label>
