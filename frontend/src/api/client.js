@@ -11,7 +11,7 @@ export const apiClient = axios.create({
   withCredentials: false,
 })
 
-const ADMIN_TOKEN_KEY = 'iubat-marathon-admin-token'
+const ADMIN_TOKEN_KEY = 'marathon-admin-token'
 
 export function getAdminToken() {
   return localStorage.getItem(ADMIN_TOKEN_KEY)

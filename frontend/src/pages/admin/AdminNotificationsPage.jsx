@@ -1,8 +1,10 @@
 import { useState } from 'react'
 import { adminApi } from '../../api/endpoints'
 import { pickErrorMessage } from '../../api/client'
+import { useEvent } from '../../context/EventContext'
 
 export default function AdminNotificationsPage() {
+  const { categories } = useEvent()
   const [form, setForm] = useState({
     channel: 'email',
     subject: '',
@@ -55,8 +57,7 @@ export default function AdminNotificationsPage() {
             <label className="label">Audience category</label>
             <select name="category" value={form.category} onChange={onChange} className="input">
               <option value="">All</option>
-              <option value="student">Students</option>
-              <option value="faculty">Faculty</option>
+              {categories.map((c) => <option key={c.id} value={c.id}>{c.label}</option>)}
             </select>
           </div>
           <div>

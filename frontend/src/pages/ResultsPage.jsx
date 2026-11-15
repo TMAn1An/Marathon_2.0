@@ -1,16 +1,13 @@
 import { useEffect, useState } from 'react'
 import { resultsApi } from '../api/endpoints'
+import { useEvent } from '../context/EventContext'
 import { pickErrorMessage } from '../api/client'
 import Alert from '../components/Alert'
 import Spinner from '../components/Spinner'
 
-const TABS = [
-  { id: '', label: 'Overall' },
-  { id: 'student', label: 'Students' },
-  { id: 'faculty', label: 'Faculty' },
-]
-
 export default function ResultsPage() {
+  const { categories, categoryLabel } = useEvent()
+  const TABS = [{ id: '', label: 'Overall' }, ...categories]
   const [category, setCategory] = useState('')
   const [rows, setRows] = useState(null)
   const [externalUrl, setExternalUrl] = useState('')
@@ -82,7 +79,7 @@ export default function ResultsPage() {
                   <td className="px-4 py-3 font-semibold text-brand-900">{category ? r.category_rank : r.rank}</td>
                   <td className="px-4 py-3">{r.full_name}</td>
                   <td className="px-4 py-3 font-mono text-slate-600">{r.bib_number}</td>
-                  <td className="px-4 py-3 capitalize text-slate-600">{r.category}</td>
+                  <td className="px-4 py-3 text-slate-600">{categoryLabel(r.category)}</td>
                   <td className="px-4 py-3 text-right font-mono font-semibold">{r.finish_time}</td>
                 </tr>
               ))}

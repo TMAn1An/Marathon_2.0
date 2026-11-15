@@ -23,7 +23,7 @@ export default function Footer() {
         <div>
           <Logo dark />
           <p className="mt-5 max-w-xs text-sm leading-relaxed text-brand-300">
-            A community 10K run by the IUBAT Department of Computer Science &amp; Engineering.
+            {event.tagline || `Organised by ${event.organizer}.`}
           </p>
           <Link to="/register" className="btn-primary mt-6">Reserve your slot</Link>
         </div>

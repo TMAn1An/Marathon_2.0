@@ -124,8 +124,8 @@ export default function PaymentPage() {
         <h2 className="text-lg">Order summary</h2>
         <dl className="mt-3 grid gap-2 sm:grid-cols-2 text-sm">
           <div><dt className="text-slate-500">Runner</dt><dd className="font-medium">{participant.full_name}</dd></div>
-          <div><dt className="text-slate-500">Category</dt><dd className="capitalize">{participant.category}</dd></div>
-          <div><dt className="text-slate-500">University ID</dt><dd>{participant.university_id}</dd></div>
+          <div><dt className="text-slate-500">Category</dt><dd>{participant.category_label}</dd></div>
+          {participant.id_number && <div><dt className="text-slate-500">ID number</dt><dd>{participant.id_number}</dd></div>}
           <div><dt className="text-slate-500">Amount due</dt><dd className="text-brand-900 font-bold">{formatCurrency(fee)}</dd></div>
         </dl>
       </section>
@@ -164,7 +164,7 @@ export default function PaymentPage() {
               Open the {payment.gateway === 'bkash' ? 'bKash' : 'Nagad'} app and choose <strong>Send Money</strong>
               {merchant ? <> to <strong className="font-mono text-brand-900">{merchant}</strong></> : ' to the organizers’ number (shown on the registration info page)'}.
             </li>
-            <li>Send exactly <strong>{formatCurrency(payment.amount)}</strong> and put <span className="font-mono">{participant.university_id}</span> as the reference.</li>
+            <li>Send exactly <strong>{formatCurrency(payment.amount)}</strong> and use <span className="font-mono">{participant.full_name}</span> as the reference.</li>
             <li>Copy the <strong>TrxID</strong> from your receipt and paste it below.</li>
           </ol>
           <form onSubmit={submitReference} className="mt-5 space-y-3">

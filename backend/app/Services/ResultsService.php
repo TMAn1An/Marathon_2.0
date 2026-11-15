@@ -40,7 +40,7 @@ class ResultsService
     }
 
     /**
-     * Applies [['bib' => 'IUB0007', 'time' => '0:52:14'], …].
+     * Applies [['bib' => 'RUN0007', 'time' => '0:52:14'], …].
      * Returns ['updated' => n, 'errors' => [row => message]].
      */
     public function import(array $rows): array

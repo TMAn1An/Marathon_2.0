@@ -14,8 +14,8 @@ const benefits = [
     ),
   },
   {
-    title: 'IUBAT race t-shirt',
-    body: 'Premium dri-fit performance tee in IUBAT colours, picked up at race-pack collection.',
+    title: 'Race t-shirt',
+    body: 'A performance tee picked up at race-pack collection.',
     icon: (
       <path d="M16 4l4 3-3 3-2-1v9a2 2 0 01-2 2H9a2 2 0 01-2-2V9L5 10 2 7l4-3 3 1h6l1-1z" />
     ),
@@ -36,14 +36,14 @@ const benefits = [
   },
   {
     title: 'Finisher medal',
-    body: 'A custom IUBAT 10K finisher medal handed out at the finish line for everyone who crosses.',
+    body: 'A finisher medal handed out at the finish line to everyone who crosses it.',
     icon: (
       <path d="M12 14l-4 6 1-3-3 1 6-4zm0 0l4 6-1-3 3 1-6-4zm0-12a5 5 0 110 10 5 5 0 010-10z" />
     ),
   },
   {
-    title: 'Post-race breakfast',
-    body: 'Refuel with a hot post-race breakfast and chai at the IUBAT Main Campus refreshment zone.',
+    title: 'Post-race refreshments',
+    body: 'Refuel with hot food and drinks at the finish-line refreshment zone.',
     icon: (
       <path d="M4 19h16v2H4v-2zm0-2v-1c0-3.3 3.6-6 8-6s8 2.7 8 6v1H4zm14-9a3 3 0 110-6 3 3 0 010 6z" />
     ),
@@ -59,7 +59,7 @@ const steps = (holdMinutes) => [
 const spans = ['lg:col-span-4', 'lg:col-span-2', 'lg:col-span-2', 'lg:col-span-4', 'lg:col-span-3', 'lg:col-span-3']
 
 export default function HomePage() {
-  const { event, fees, slots, holdMinutes } = useEvent()
+  const { event, categories, slots, holdMinutes, distance } = useEvent()
   const total = slots?.total
 
   return (
@@ -67,7 +67,7 @@ export default function HomePage() {
       {/* HERO */}
       <section className="hero-bg relative overflow-hidden pb-24 pt-36 text-white lg:pt-44">
         <span aria-hidden className="text-outline pointer-events-none absolute -right-6 top-24 select-none font-display text-[22rem] font-extrabold leading-none opacity-[0.12] max-lg:hidden">
-          10K
+          {distance}K
         </span>
 
         <div className="relative mx-auto grid max-w-6xl items-center gap-14 px-6 lg:grid-cols-[1.25fr_1fr]">
@@ -78,13 +78,13 @@ export default function HomePage() {
             </p>
 
             <h1 className="mt-6 font-display text-5xl font-extrabold leading-[0.95] tracking-tight text-white sm:text-6xl lg:text-7xl xl:text-[5.5rem]">
-              Run <span className="text-outline">10K</span>
+              Run <span className="text-outline">{distance}K</span>
               <br />
-              with IUBAT CSE.
+              together.
             </h1>
 
             <p className="mt-6 max-w-xl text-lg leading-relaxed text-brand-200">
-              The {event.name}: a community run for students, faculty and friends of the university.
+              {event.tagline || `Join the ${event.name}.`}
               {total ? <> Just <strong className="text-white">{total} BIBs</strong> are up for grabs.</> : null}
             </p>
 
@@ -105,10 +105,10 @@ export default function HomePage() {
       <section aria-label="Race facts" className="bg-action-400 text-brand-950">
         <dl className="mx-auto grid max-w-6xl grid-cols-2 gap-x-6 gap-y-4 px-6 py-6 text-center md:grid-cols-4 md:text-left">
           {[
-            ['Distance', '10 kilometres'],
+            ['Distance', `${distance} kilometres`],
             ['Race day', formatDate(event.date, { dateStyle: 'medium' })],
-            ['Start & finish', 'IUBAT campus'],
-            ['Categories', 'Students · Faculty'],
+            ['Venue', event.venue],
+            ['Categories', categories.map((c) => c.label).join(' · ') || '—'],
           ].map(([k, v]) => (
             <div key={k}>
               <dt className="text-[11px] font-semibold uppercase tracking-[0.18em] opacity-70">{k}</dt>
@@ -170,10 +170,9 @@ export default function HomePage() {
           <h2 className="reveal max-w-xl text-4xl !text-white md:text-5xl">The race in numbers.</h2>
           <dl className="mt-12 grid gap-px overflow-hidden rounded-3xl bg-white/10 ring-1 ring-white/10 sm:grid-cols-2 lg:grid-cols-4">
             {[
-              ['Distance', '10', 'km'],
+              ['Distance', String(distance), 'km'],
               ['Runner capacity', total ?? '—', ''],
-              ['Student fee', formatCurrency(fees.student), ''],
-              ['Faculty fee', formatCurrency(fees.faculty), ''],
+              ...categories.slice(0, 2).map((c) => [`${c.label} fee`, formatCurrency(c.fee), '']),
             ].map(([label, value, unit]) => (
               <div key={label} className="reveal bg-brand-950 p-8">
                 <dt className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-300">{label}</dt>
@@ -191,7 +190,7 @@ export default function HomePage() {
       {/* FINAL CTA */}
       <section className="mx-auto max-w-6xl px-6 pb-8 pt-4">
         <div className="reveal relative overflow-hidden rounded-4xl bg-action-400 px-8 py-16 text-center md:px-16">
-          <span aria-hidden className="pointer-events-none absolute -bottom-16 left-1/2 -translate-x-1/2 select-none font-display text-[16rem] font-extrabold leading-none text-brand-950/[0.06]">10K</span>
+          <span aria-hidden className="pointer-events-none absolute -bottom-16 left-1/2 -translate-x-1/2 select-none font-display text-[16rem] font-extrabold leading-none text-brand-950/[0.06]">{distance}K</span>
           <h2 className="relative mx-auto max-w-2xl text-4xl text-brand-950 md:text-5xl">
             Lace up. Your slot won&rsquo;t wait forever.
           </h2>

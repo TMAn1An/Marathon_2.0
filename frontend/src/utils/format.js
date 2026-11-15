@@ -1,4 +1,11 @@
-export function formatCurrency(value, currency = 'BDT') {
+let defaultCurrency = 'BDT'
+
+/** Set once the event config (currency) is known. */
+export function setDefaultCurrency(code) {
+  if (code) defaultCurrency = code
+}
+
+export function formatCurrency(value, currency = defaultCurrency) {
   const number = Number(value)
   if (Number.isNaN(number)) return value
   return new Intl.NumberFormat('en-BD', {

@@ -19,7 +19,7 @@ export default function OrganizersPage() {
       <span className="badge-orange">Behind the race</span>
       <h1 className="mt-3 text-4xl">Organizers &amp; volunteers</h1>
       <p className="mt-3 max-w-3xl text-slate-600">
-        The marathon is organised by faculty, students and volunteers from the IUBAT CSE Department.
+        The event is run by {event.organizer || 'a team of volunteers'}.
         Want to join the volunteer team? Email <a href={`mailto:${event.support_email}`} className="text-brand-700 underline">{event.support_email}</a>.
       </p>
 

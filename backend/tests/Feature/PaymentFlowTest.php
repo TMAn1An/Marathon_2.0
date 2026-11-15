@@ -45,14 +45,14 @@ class PaymentFlowTest extends TestCase
             'transaction_id' => $tx,
             'participant_token' => $participant->public_token,
             'outcome' => 'success',
-        ])->assertOk()->assertJsonPath('data.participant.bib_number', 'IUB0001');
+        ])->assertOk()->assertJsonPath('data.participant.bib_number', 'RUN0001');
 
         [$second, $tx2] = $this->startCheckout();
         $this->postJson('/api/payments/confirm', [
             'transaction_id' => $tx2,
             'participant_token' => $second->public_token,
             'outcome' => 'success',
-        ])->assertJsonPath('data.participant.bib_number', 'IUB0002');
+        ])->assertJsonPath('data.participant.bib_number', 'RUN0002');
     }
 
     public function test_cannot_confirm_someone_elses_transaction(): void

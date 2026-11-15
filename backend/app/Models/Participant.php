@@ -20,16 +20,12 @@ class Participant extends Model
 
     public const STATUS_CANCELLED = 'cancelled';
 
-    public const CATEGORY_STUDENT = 'student';
-
-    public const CATEGORY_FACULTY = 'faculty';
-
     protected $fillable = [
         'public_token',
         'finish_time_seconds',
         'bib_number',
         'full_name',
-        'university_id',
+        'id_number',
         'category',
         'phone',
         'email',
@@ -55,6 +51,12 @@ class Participant extends Model
         static::creating(function (Participant $participant) {
             $participant->public_token ??= strtolower((string) Str::ulid());
         });
+    }
+
+    /** @return list<string> The category ids allowed by config. */
+    public static function categoryIds(): array
+    {
+        return array_keys(config('marathon.categories', []));
     }
 
     /** Race time formatted as H:MM:SS, or null when no result is recorded. */
@@ -86,7 +88,8 @@ class Participant extends Model
             'token' => $this->public_token,
             'full_name' => $this->full_name,
             'category' => $this->category,
-            'university_id' => $this->university_id,
+            'id_number' => $this->id_number,
+            'category_label' => config("marathon.categories.{$this->category}.label", ucfirst((string) $this->category)),
             'status' => $this->status,
             'bib_number' => $this->bib_number,
         ];

@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Api;
 
+use App\Models\Participant;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -30,8 +31,8 @@ class UpdateParticipantRequest extends FormRequest
 
         return [
             'full_name' => ['sometimes', 'string', 'min:3', 'max:150'],
-            'university_id' => ['sometimes', 'string', 'max:50'],
-            'category' => ['sometimes', Rule::in(['student', 'faculty'])],
+            'id_number' => ['sometimes', 'nullable', 'string', 'max:50'],
+            'category' => ['sometimes', Rule::in(Participant::categoryIds())],
             'phone' => [
                 'sometimes',
                 'string',

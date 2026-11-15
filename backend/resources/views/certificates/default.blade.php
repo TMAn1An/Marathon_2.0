@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>{{ $event['name'] ?? 'IUBAT CSE 10K Marathon' }} — Certificate of Completion</title>
+    <title>{{ $event['name'] }} — Certificate of Completion</title>
     <style>
         /* A4 landscape with zero @page margin gives us a fixed 297 x 210 mm
            printable canvas. Everything below is positioned with absolute
@@ -221,9 +221,9 @@
     <div class="frame"></div>
     <div class="frame-accent"></div>
 
-    <div class="ribbon">{{ $event['organizer'] ?? 'IUBAT · CSE Department' }}</div>
+    <div class="ribbon">{{ $event['organizer'] }}</div>
 
-    <div class="institution">{{ $event['name'] ?? 'IUBAT CSE 10K Marathon' }}</div>
+    <div class="institution">{{ $event['name'] }}</div>
 
     <h1 class="title">Certificate of Completion</h1>
     <div class="title-rule"></div>
@@ -236,11 +236,11 @@
 
     <p class="description">
         successfully completed the
-        <strong>{{ $event['name'] ?? 'IUBAT CSE 10K Marathon' }}</strong>
+        <strong>{{ $event['name'] }}</strong>
         held on <strong>{{ $event['date'] ?? '' }}</strong>
-        at <strong>{{ $event['venue'] ?? 'IUBAT Main Campus, Uttara, Dhaka' }}</strong>,
-        completing the 10&nbsp;kilometre course in the
-        {{ ucfirst($participant->category) }} category.
+        at <strong>{{ $event['venue'] }}</strong>,
+        completing the {{ $distance }}&nbsp;kilometre course in the
+        {{ $categoryLabel }} category.
     </p>
 
     <table class="meta">
@@ -251,7 +251,7 @@
             </td>
             <td>
                 <span class="meta-label">Category</span>
-                <span class="meta-value">{{ ucfirst($participant->category) }}</span>
+                <span class="meta-value">{{ $categoryLabel }}</span>
             </td>
             @if (!empty($finishTime))
                 <td>
@@ -276,12 +276,12 @@
         <tr>
             <td class="sig">
                 <div class="signature-line">Race Director</div>
-                <div class="signature-role">IUBAT CSE 10K Marathon</div>
+                <div class="signature-role">{{ $event['name'] }}</div>
             </td>
             <td class="spacer">&nbsp;</td>
             <td class="sig">
-                <div class="signature-line">Head, CSE Department</div>
-                <div class="signature-role">IUBAT</div>
+                <div class="signature-line">Event Organizer</div>
+                <div class="signature-role">{{ $event['organizer'] }}</div>
             </td>
             <td class="spacer">&nbsp;</td>
         </tr>

@@ -18,7 +18,9 @@ class EventInfoController extends Controller
         return response()->json([
             'data' => [
                 'event' => config('marathon.event'),
-                'fees' => config('marathon.fees'),
+                'categories' => collect(config('marathon.categories'))
+                    ->map(fn ($c, $id) => ['id' => $id, 'label' => $c['label'], 'fee' => $c['fee']])
+                    ->values(),
                 'hold_minutes' => (int) config('marathon.slots.hold_minutes'),
             ],
         ]);

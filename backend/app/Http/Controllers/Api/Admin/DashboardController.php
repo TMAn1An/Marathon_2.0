@@ -44,10 +44,11 @@ class DashboardController extends Controller
                     'confirmed' => $confirmed,
                     'pending' => $pending,
                     'cancelled' => $cancelled,
-                    'by_category' => [
-                        'student' => (int) ($byCategory['student'] ?? 0),
-                        'faculty' => (int) ($byCategory['faculty'] ?? 0),
-                    ],
+                    'by_category' => collect(config('marathon.categories'))
+                        ->map(fn ($c, $id) => [
+                            'label' => $c['label'],
+                            'total' => (int) ($byCategory[$id] ?? 0),
+                        ]),
                 ],
                 'payments' => [
                     'completed_count' => (int) ($payments['completed']->total ?? 0),

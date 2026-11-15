@@ -35,7 +35,7 @@ export default function SponsorsPage() {
       <span className="badge-orange">Partners</span>
       <h1 className="mt-3 text-4xl">Sponsors &amp; partners</h1>
       <p className="mt-3 max-w-3xl text-slate-600">
-        We are grateful to the organizations that make the IUBAT CSE 10K Marathon possible.
+        We are grateful to the organizations that make the {event.name} possible.
         Want to partner with us next year? Email <a className="text-brand-700 underline" href={`mailto:${event.support_email}`}>{event.support_email}</a>.
       </p>
 

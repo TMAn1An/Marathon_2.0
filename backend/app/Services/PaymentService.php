@@ -20,10 +20,7 @@ class PaymentService
      */
     public function calculateFee(Participant $participant): int
     {
-        return (int) config(
-            "marathon.fees.{$participant->category}",
-            (int) config('marathon.fees.student', 0)
-        );
+        return (int) config("marathon.categories.{$participant->category}.fee", 0);
     }
 
     /**

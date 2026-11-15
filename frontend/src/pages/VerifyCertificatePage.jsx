@@ -24,7 +24,7 @@ export default function VerifyCertificatePage() {
           <>
             <div className="mx-auto h-14 w-14 grid place-items-center rounded-full bg-emerald-100 text-emerald-600 text-3xl">✓</div>
             <h3 className="mt-3 text-2xl">Verified</h3>
-            <p className="mt-2 text-slate-600">This is a genuine IUBAT marathon certificate.</p>
+            <p className="mt-2 text-slate-600">This is a genuine certificate issued for this event.</p>
             <dl className="mt-5 grid gap-3 sm:grid-cols-2 text-left">
               <div>
                 <dt className="text-xs uppercase tracking-wide text-slate-500">Name</dt>
@@ -36,7 +36,7 @@ export default function VerifyCertificatePage() {
               </div>
               <div>
                 <dt className="text-xs uppercase tracking-wide text-slate-500">Category</dt>
-                <dd className="capitalize">{state.data.category}</dd>
+                <dd>{state.data.category_label}</dd>
               </div>
               <div>
                 <dt className="text-xs uppercase tracking-wide text-slate-500">Event</dt>

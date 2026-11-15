@@ -40,7 +40,7 @@ class ParticipantController extends Controller
                 $q->where('full_name', 'like', "%{$search}%")
                     ->orWhere('email', 'like', "%{$search}%")
                     ->orWhere('phone', 'like', "%{$search}%")
-                    ->orWhere('university_id', 'like', "%{$search}%")
+                    ->orWhere('id_number', 'like', "%{$search}%")
                     ->orWhere('bib_number', 'like', "%{$search}%");
             });
         }
@@ -141,7 +141,7 @@ class ParticipantController extends Controller
         return response()->stream(function () use ($query) {
             $out = fopen('php://output', 'w');
             fputcsv($out, [
-                'BIB', 'Full Name', 'University ID', 'Category', 'Phone',
+                'BIB', 'Full Name', 'ID Number', 'Category', 'Phone',
                 'Email', 'Emergency Contact', 'T-shirt Size', 'Status',
                 'Payment Status', 'Amount', 'Confirmed At', 'Finish Time',
             ]);
@@ -152,7 +152,7 @@ class ParticipantController extends Controller
                     fputcsv($out, array_map([self::class, 'csvSafe'], [
                         $p->bib_number,
                         $p->full_name,
-                        $p->university_id,
+                        $p->id_number,
                         $p->category,
                         $p->phone,
                         $p->email,

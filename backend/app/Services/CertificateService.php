@@ -61,6 +61,8 @@ class CertificateService
             'verifyUrl' => $verifyUrl,
             'qrDataUri' => $qrDataUri,
             'event' => config('marathon.event'),
+            'distance' => config('marathon.event.distance_km'),
+            'categoryLabel' => config("marathon.categories.{$participant->category}.label", ucfirst((string) $participant->category)),
             'finishTime' => $participant->finish_time,
             'rank' => app(ResultsService::class)->rankOf($participant),
         ])->setPaper('a4', 'landscape');
