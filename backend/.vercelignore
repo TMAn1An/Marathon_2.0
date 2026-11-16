@@ -10,3 +10,8 @@ storage/framework/sessions/*
 storage/framework/views/*
 database/*.sqlite
 phpunit.xml
+package.json
+package-lock.json
+vite.config.js
+resources/js
+resources/css
