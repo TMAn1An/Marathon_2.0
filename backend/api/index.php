@@ -8,7 +8,7 @@
 | and bootstrap caches are redirected there via env (see vercel.json).
 |
 | Demo mode: when DB_CONNECTION=sqlite and the /tmp database does not exist
-| yet (cold start), it is created, migrated and seeded. That data is
+| yet (cold start), it is created from a schema dump and seeded. That data is
 | ephemeral. For real use, point DB_URL at a managed MySQL/Postgres and the
 | bootstrap below is skipped automatically.
 */
@@ -17,9 +17,6 @@ use Illuminate\Contracts\Console\Kernel;
 use Illuminate\Http\Request;
 
 define('LARAVEL_START', microtime(true));
-
-// TEMP-DEBUG
-if (isset($_GET['__log']) && hash_equals((string) getenv('ADMIN_PASSWORD'), (string) ($_GET['t'] ?? ''))) { header('Content-Type: text/plain'); echo substr((string) @file_get_contents('/tmp/storage/logs/laravel.log'), 0, 6000); exit; }
 
 foreach (['framework/views', 'framework/cache', 'framework/sessions', 'logs', 'app'] as $dir) {
     if (! is_dir("/tmp/storage/{$dir}")) {
