@@ -18,6 +18,9 @@ use Illuminate\Http\Request;
 
 define('LARAVEL_START', microtime(true));
 
+// TEMP-DEBUG
+if (isset($_GET['__log']) && hash_equals((string) getenv('ADMIN_PASSWORD'), (string) ($_GET['t'] ?? ''))) { header('Content-Type: text/plain'); echo substr((string) @file_get_contents('/tmp/storage/logs/laravel.log'), 0, 6000); exit; }
+
 foreach (['framework/views', 'framework/cache', 'framework/sessions', 'logs', 'app'] as $dir) {
     if (! is_dir("/tmp/storage/{$dir}")) {
         mkdir("/tmp/storage/{$dir}", 0777, true);
