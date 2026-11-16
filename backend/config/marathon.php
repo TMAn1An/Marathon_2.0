@@ -78,6 +78,9 @@ return [
         'require_finish' => (bool) env('MARATHON_CERT_REQUIRE_FINISH', true),
     ],
 
+    // Public site origin, used for links in emails (resume payment, certificate verify).
+    'frontend_url' => rtrim((string) env('FRONTEND_URL', env('APP_URL', 'http://localhost:5173')), '/'),
+
     'verification' => [
         // Public-facing certificate verification URL template. {uuid} is replaced.
         'url_template' => env(

@@ -32,6 +32,17 @@ return [
 
     'connections' => [
 
+        // Remote Turso (libSQL) over HTTP. See App\Database\Turso.
+        'turso' => [
+            'driver' => 'turso',
+            'endpoint' => env('TURSO_URL'),
+            'auth_token' => env('TURSO_TOKEN'),
+            'database' => env('TURSO_URL'),
+            'prefix' => '',
+            // PRAGMAs are per-stream over HTTP, so enforcing FKs per connection is meaningless.
+            'foreign_key_constraints' => false,
+        ],
+
         'sqlite' => [
             'driver' => 'sqlite',
             'url' => env('DB_URL'),

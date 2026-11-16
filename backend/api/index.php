@@ -5,15 +5,10 @@
 | Vercel serverless entry point (vercel-php runtime)
 |--------------------------------------------------------------------------
 | The deployment filesystem is read-only except /tmp, so Laravel's storage
-| and bootstrap caches are redirected there via env (see vercel.json).
-|
-| Demo mode: when DB_CONNECTION=sqlite and the /tmp database does not exist
-| yet (cold start), it is created from a schema dump and seeded. That data is
-| ephemeral. For real use, point DB_URL at a managed MySQL/Postgres and the
-| bootstrap below is skipped automatically.
+| and bootstrap caches are redirected there via env (see vercel.json). Data
+| lives in Turso (DB_CONNECTION=turso), never on the function's disk.
 */
 
-use Illuminate\Contracts\Console\Kernel;
 use Illuminate\Http\Request;
 
 define('LARAVEL_START', microtime(true));
@@ -27,16 +22,6 @@ foreach (['framework/views', 'framework/cache', 'framework/sessions', 'logs', 'a
 require __DIR__.'/../vendor/autoload.php';
 
 $app = require_once __DIR__.'/../bootstrap/app.php';
-
-$database = getenv('DB_DATABASE');
-if (getenv('DB_CONNECTION') === 'sqlite' && $database && ! file_exists($database)) {
-    // The runtime's bundled SQLite is too old for Laravel's schema
-    // introspection, so migrations cannot run here. Load the pre-built
-    // schema (database/demo-schema.sql) instead, then seed the admin.
-    touch($database);
-    (new PDO('sqlite:'.$database))->exec(file_get_contents(__DIR__.'/../database/demo-schema.sql'));
-    $app->make(Kernel::class)->call('db:seed', ['--force' => true]);
-}
 
 // The runtime reports SCRIPT_NAME=/api/index.php, which makes Symfony treat
 // "/api" as the base URL and strip it from /api/* routes. Present the request

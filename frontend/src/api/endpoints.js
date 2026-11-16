@@ -12,6 +12,7 @@ export const slotsApi = {
 
 export const registrationApi = {
   register: (payload) => apiClient.post('/registration', payload),
+  resume: (token) => apiClient.get(`/registration/${token}`),
 }
 
 export const paymentsApi = {
@@ -48,6 +49,9 @@ export const adminApi = {
   // The export is behind bearer auth, so it must be fetched (not linked) and saved as a blob.
   exportCsv: (params = {}) =>
     apiClient.get('/admin/participants/export', { params, responseType: 'blob' }),
+  payments: (params) => apiClient.get('/admin/payments', { params }),
+  approvePayment: (id) => apiClient.post(`/admin/payments/${id}/approve`),
+  rejectPayment: (id, reason) => apiClient.post(`/admin/payments/${id}/reject`, { reason }),
   importResults: (rows) => apiClient.post('/admin/results/import', { rows }),
   bulkNotify: (payload) => apiClient.post('/admin/notifications/bulk', payload),
   sponsors: () => apiClient.get('/admin/sponsors'),

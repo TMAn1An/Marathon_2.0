@@ -52,7 +52,7 @@ frontend/   # React 19 + Vite + Tailwind SPA
 | Layer    | Tech |
 | -------- | ---- |
 | Backend  | Laravel 13, Sanctum, DOMPDF (`barryvdh/laravel-dompdf`), `simplesoftwareio/simple-qrcode` |
-| Database | MySQL (production) / SQLite (local dev) |
+| Database | SQLite (local dev) · MySQL / Postgres · **Turso** (libSQL over HTTP, serverless-friendly) |
 | Frontend | React 19, Vite 8, Tailwind CSS 3, Axios, React Router 7 |
 | Auth     | Sanctum bearer tokens (admin) |
 
@@ -148,6 +148,25 @@ apiResource /api/admin/sponsors, /api/admin/volunteers
 - **Late verification of an expired hold** → only confirmed if capacity remains.
 - **Repeated payment confirmation** → idempotent.
 - **Mail server down** → logged, never surfaced to the runner.
+
+## Manual payments (default)
+
+Until a gateway is plugged in, runners pay by **Send Money** to your bKash/Nagad number and submit the TrxID.
+Admins review them under **Admin → Payments**: *Approve* confirms the runner and issues the BIB; *Reject* needs a
+reason, emails the runner a "pay again" link (`/pay/<token>`) and re-opens a short slot hold. A rejected TrxID
+stays burned so it can't be reused. Set `MARATHON_BKASH_NUMBER` / `MARATHON_NAGAD_NUMBER` to show your numbers.
+
+## Deploying on Vercel + Turso
+
+Two Vercel projects from this repo: `frontend/` (Vite SPA) and `backend/` (Laravel via the `vercel-php` runtime,
+region `bom1`). The API uses Turso through the built-in `turso` database driver (`app/Database/Turso`), so no
+database extension is needed. Run migrations from your machine against Turso:
+
+```bash
+cd backend
+DB_CONNECTION=turso TURSO_URL=https://<db>-<org>.<region>.turso.io TURSO_TOKEN=... php artisan migrate --force
+php artisan marathon:create-admin you@example.com
+```
 
 ## Production checklist
 

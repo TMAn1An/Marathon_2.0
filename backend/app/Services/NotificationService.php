@@ -30,6 +30,26 @@ class NotificationService
     }
 
     /**
+     * Tells a runner their submitted payment could not be verified and how to
+     * try again. Never throws.
+     */
+    public function sendPaymentRejected(Participant $participant, string $reason): void
+    {
+        $event = config('marathon.event.name');
+        $link = config('marathon.frontend_url').'/pay/'.$participant->public_token;
+        $support = config('marathon.event.support_email');
+        $minutes = (int) config('marathon.slots.hold_minutes');
+
+        $body = "Hello {$participant->full_name},\n\n"
+            ."We could not verify your payment for the {$event}.\n"
+            ."Reason: {$reason}\n\n"
+            ."Your slot is held for {$minutes} more minutes. Please submit the correct transaction ID here:\n{$link}\n\n"
+            ."If you need help, contact {$support}.";
+
+        $this->logAndSendEmail($participant, 'payment_rejected', "{$event} – Payment could not be verified", $body);
+    }
+
+    /**
      * Sends a bulk notification to a collection of participants.
      * Returns the number of recipients dispatched.
      */

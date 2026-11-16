@@ -118,6 +118,39 @@ class PaymentService
         });
     }
 
+    /**
+     * Admin rejects a submitted (still pending) payment. The runner is moved
+     * back to "reserved" with a fresh hold window so they can pay again, and
+     * is emailed the reason plus a link to resume checkout.
+     */
+    public function reject(Payment $payment, string $reason): Payment
+    {
+        if ($payment->status !== Payment::STATUS_PENDING) {
+            throw new PaymentException('Only payments that are awaiting review can be rejected.', 409);
+        }
+
+        $payment = DB::transaction(function () use ($payment, $reason) {
+            $payment->update([
+                'status' => Payment::STATUS_FAILED,
+                'failed_at' => now(),
+                'failure_reason' => $reason,
+            ]);
+
+            $participant = $payment->participant;
+            if ($participant && in_array($participant->status, [Participant::STATUS_PENDING_PAYMENT, Participant::STATUS_RESERVED], true)) {
+                $participant->status = Participant::STATUS_RESERVED;
+                $participant->slot_reserved_until = now()->addMinutes((int) config('marathon.slots.hold_minutes'));
+                $participant->save();
+            }
+
+            return $payment->fresh('participant');
+        });
+
+        $this->notificationService->sendPaymentRejected($payment->participant, $reason);
+
+        return $payment;
+    }
+
     protected function assertAllowedGateway(string $gateway): void
     {
         if (! in_array($gateway, ['bkash', 'nagad'], true)) {

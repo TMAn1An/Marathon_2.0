@@ -44,7 +44,7 @@ export default function AdminDashboardPage() {
 
       <div className="grid gap-4 sm:grid-cols-3">
         <StatCard label="Completed payments" value={pay.completed_count} hint={formatCurrency(pay.completed_amount)} />
-        <StatCard label="Pending payments" value={pay.pending_count} hint="Awaiting confirmation" />
+        <StatCard label="Awaiting review" value={pay.awaiting_review ?? 0} hint="TrxIDs to approve or reject" />
         <StatCard label="Failed payments" value={pay.failed_count} hint="Hold released back to pool" />
       </div>
 

@@ -6,7 +6,8 @@
   "outputDirectory": null,
   "functions": {
     "api/index.php": {
-      "runtime": "vercel-php@0.7.4"
+      "runtime": "vercel-php@0.7.4",
+      "maxDuration": 30
     }
   },
   "routes": [
@@ -28,5 +29,8 @@
     "SESSION_DRIVER": "array",
     "QUEUE_CONNECTION": "sync",
     "MAIL_MAILER": "log"
-  }
+  },
+  "regions": [
+    "bom1"
+  ]
 }

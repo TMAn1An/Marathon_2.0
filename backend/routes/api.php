@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\Admin\AuthController as AdminAuthController;
 use App\Http\Controllers\Api\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Api\Admin\NotificationController as AdminNotificationController;
 use App\Http\Controllers\Api\Admin\ParticipantController as AdminParticipantController;
+use App\Http\Controllers\Api\Admin\PaymentReviewController as AdminPaymentReviewController;
 use App\Http\Controllers\Api\Admin\ResultsController as AdminResultsController;
 use App\Http\Controllers\Api\Admin\SponsorController as AdminSponsorController;
 use App\Http\Controllers\Api\Admin\VolunteerController as AdminVolunteerController;
@@ -32,6 +33,7 @@ Route::get('/payments/config', [PublicPaymentController::class, 'config']);
 
 Route::middleware('throttle:30,1')->group(function () {
     Route::post('/registration', [PublicRegistrationController::class, 'store']);
+    Route::get('/registration/{token}', [PublicRegistrationController::class, 'show']);
     Route::post('/payments/initiate', [PublicPaymentController::class, 'initiate']);
     Route::post('/payments/submit', [PublicPaymentController::class, 'submit']);
     Route::post('/payments/confirm', [PublicPaymentController::class, 'confirm']);
@@ -63,6 +65,10 @@ Route::prefix('admin')->group(function () {
         Route::get('/participants/{participant}', [AdminParticipantController::class, 'show']);
         Route::patch('/participants/{participant}', [AdminParticipantController::class, 'update']);
         Route::post('/participants/{participant}/verify-payment', [AdminParticipantController::class, 'verifyPayment']);
+
+        Route::get('/payments', [AdminPaymentReviewController::class, 'index']);
+        Route::post('/payments/{payment}/approve', [AdminPaymentReviewController::class, 'approve']);
+        Route::post('/payments/{payment}/reject', [AdminPaymentReviewController::class, 'reject']);
 
         Route::post('/results/import', [AdminResultsController::class, 'import']);
         Route::post('/notifications/bulk', [AdminNotificationController::class, 'bulk']);

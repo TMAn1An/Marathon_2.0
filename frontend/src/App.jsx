@@ -22,11 +22,13 @@ const PaymentSuccessPage = lazy(() => import('./pages/PaymentSuccessPage'))
 const CertificatePage = lazy(() => import('./pages/CertificatePage'))
 const VerifyCertificatePage = lazy(() => import('./pages/VerifyCertificatePage'))
 const ResultsPage = lazy(() => import('./pages/ResultsPage'))
+const PayResumePage = lazy(() => import('./pages/PayResumePage'))
 const NotFoundPage = lazy(() => import('./pages/NotFoundPage'))
 
 const AdminLoginPage = lazy(() => import('./pages/admin/AdminLoginPage'))
 const AdminDashboardPage = lazy(() => import('./pages/admin/AdminDashboardPage'))
 const AdminParticipantsPage = lazy(() => import('./pages/admin/AdminParticipantsPage'))
+const AdminPaymentsPage = lazy(() => import('./pages/admin/AdminPaymentsPage'))
 const AdminResultsPage = lazy(() => import('./pages/admin/AdminResultsPage'))
 const AdminNotificationsPage = lazy(() => import('./pages/admin/AdminNotificationsPage'))
 const AdminSponsorsPage = lazy(() => import('./pages/admin/AdminSponsorsPage'))
@@ -52,6 +54,7 @@ export default function App() {
                   <Route path="/sponsors" element={page('Sponsors', <SponsorsPage />)} />
                   <Route path="/organizers" element={page('Organizers', <OrganizersPage />)} />
                   <Route path="/register" element={page('Register', <RegisterPage />)} />
+                  <Route path="/pay/:token" element={page('Resume payment', <PayResumePage />)} />
                   <Route path="/payment" element={page('Payment', <PaymentPage />)} />
                   <Route path="/payment/success" element={page('Registration status', <PaymentSuccessPage />)} />
                   <Route path="/certificate" element={page('Certificate', <CertificatePage />)} />
@@ -64,6 +67,7 @@ export default function App() {
                 <Route path="/admin" element={<AdminLayout />}>
                   <Route index element={page('Dashboard', <AdminDashboardPage />)} />
                   <Route path="participants" element={page('Participants', <AdminParticipantsPage />)} />
+                  <Route path="payments" element={page('Payments', <AdminPaymentsPage />)} />
                   <Route path="results" element={page('Results', <AdminResultsPage />)} />
                   <Route path="notifications" element={page('Notifications', <AdminNotificationsPage />)} />
                   <Route path="sponsors" element={page('Sponsors', <AdminSponsorsPage />)} />

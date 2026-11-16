@@ -53,6 +53,7 @@ class DashboardController extends Controller
                 'payments' => [
                     'completed_count' => (int) ($payments['completed']->total ?? 0),
                     'completed_amount' => (float) ($payments['completed']->amount ?? 0),
+                    'awaiting_review' => Payment::where('status', Payment::STATUS_PENDING)->whereNotNull('submitted_reference')->count(),
                     'pending_count' => (int) ($payments['pending']->total ?? 0),
                     'failed_count' => (int) ($payments['failed']->total ?? 0),
                 ],

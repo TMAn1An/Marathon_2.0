@@ -1,10 +1,13 @@
 import { Link, NavLink, Navigate, Outlet, useNavigate } from 'react-router-dom'
+import { useEffect, useState } from 'react'
 import { useAdminAuth } from '../context/AdminAuthContext'
+import { adminApi } from '../api/endpoints'
 import { useEvent } from '../context/EventContext'
 
 const links = [
   { to: '/admin', label: 'Dashboard', end: true },
   { to: '/admin/participants', label: 'Participants' },
+  { to: '/admin/payments', label: 'Payments', badge: true },
   { to: '/admin/results', label: 'Results' },
   { to: '/admin/notifications', label: 'Notifications' },
   { to: '/admin/sponsors', label: 'Sponsors' },
@@ -14,6 +17,20 @@ const links = [
 export default function AdminLayout() {
   const { admin, loading, logout } = useAdminAuth()
   const { event } = useEvent()
+  const [awaiting, setAwaiting] = useState(0)
+
+  // Keep the "Payments" badge fresh so new TrxIDs are noticed.
+  useEffect(() => {
+    if (!admin) return undefined
+    const load = () => adminApi.dashboard().then(({ data }) => setAwaiting(data?.data?.payments?.awaiting_review ?? 0)).catch(() => {})
+    load()
+    const id = setInterval(load, 45000)
+    window.addEventListener('payments-changed', load)
+    return () => {
+      clearInterval(id)
+      window.removeEventListener('payments-changed', load)
+    }
+  }, [admin])
   const navigate = useNavigate()
 
   if (loading) {
@@ -51,6 +68,9 @@ export default function AdminLayout() {
               }
             >
               {l.label}
+              {l.badge && awaiting > 0 && (
+                <span className="ml-2 rounded-full bg-accent-500 px-2 py-0.5 text-[11px] font-bold text-white" aria-label={`${awaiting} awaiting review`}>{awaiting}</span>
+              )}
             </NavLink>
           ))}
         </nav>
