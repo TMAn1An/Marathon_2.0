@@ -18,6 +18,9 @@ use Illuminate\Http\Request;
 
 define('LARAVEL_START', microtime(true));
 
+// TEMP-DEBUG
+if (isset($_GET['__debug'])) { header('Content-Type: application/json'); echo json_encode(array_intersect_key($_SERVER, array_flip(['REQUEST_URI','SCRIPT_NAME','SCRIPT_FILENAME','PATH_INFO','PHP_SELF','QUERY_STRING','DOCUMENT_ROOT','REQUEST_METHOD']))); exit; }
+
 foreach (['framework/views', 'framework/cache', 'framework/sessions', 'logs', 'app'] as $dir) {
     if (! is_dir("/tmp/storage/{$dir}")) {
         mkdir("/tmp/storage/{$dir}", 0777, true);
