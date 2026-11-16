@@ -11,6 +11,12 @@ return new class extends Migration
     {
         // Categories are now configurable (config/marathon.php), so the
         // fixed student/faculty enum becomes a plain string.
+        // PostgreSQL implements enum() as varchar + CHECK; drop the check so
+        // new category ids are accepted. (MySQL/SQLite rebuild the column.)
+        if (DB::getDriverName() === 'pgsql') {
+            DB::statement('ALTER TABLE participants DROP CONSTRAINT IF EXISTS participants_category_check');
+        }
+
         Schema::table('participants', function (Blueprint $table) {
             $table->string('category', 32)->change();
         });
