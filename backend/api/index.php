@@ -18,9 +18,6 @@ use Illuminate\Http\Request;
 
 define('LARAVEL_START', microtime(true));
 
-// TEMP-DEBUG
-if (isset($_GET['__log']) && hash_equals((string) getenv('ADMIN_PASSWORD'), (string) ($_GET['t'] ?? ''))) { header('Content-Type: text/plain'); echo substr((string) @file_get_contents('/tmp/storage/logs/laravel.log'), 0, 2500); exit; }
-
 foreach (['framework/views', 'framework/cache', 'framework/sessions', 'logs', 'app'] as $dir) {
     if (! is_dir("/tmp/storage/{$dir}")) {
         mkdir("/tmp/storage/{$dir}", 0777, true);
@@ -33,9 +30,12 @@ $app = require_once __DIR__.'/../bootstrap/app.php';
 
 $database = getenv('DB_DATABASE');
 if (getenv('DB_CONNECTION') === 'sqlite' && $database && ! file_exists($database)) {
+    // The runtime's bundled SQLite is too old for Laravel's schema
+    // introspection, so migrations cannot run here. Load the pre-built
+    // schema (database/demo-schema.sql) instead, then seed the admin.
     touch($database);
-    $app->make(Kernel::class)
-        ->call('migrate', ['--force' => true, '--seed' => true]);
+    (new PDO('sqlite:'.$database))->exec(file_get_contents(__DIR__.'/../database/demo-schema.sql'));
+    $app->make(Kernel::class)->call('db:seed', ['--force' => true]);
 }
 
 // The runtime reports SCRIPT_NAME=/api/index.php, which makes Symfony treat
