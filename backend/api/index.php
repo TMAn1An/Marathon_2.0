@@ -18,9 +18,6 @@ use Illuminate\Http\Request;
 
 define('LARAVEL_START', microtime(true));
 
-// TEMP-DEBUG
-if (isset($_GET['__debug'])) { header('Content-Type: application/json'); echo json_encode(array_intersect_key($_SERVER, array_flip(['REQUEST_URI','SCRIPT_NAME','SCRIPT_FILENAME','PATH_INFO','PHP_SELF','QUERY_STRING','DOCUMENT_ROOT','REQUEST_METHOD']))); exit; }
-
 foreach (['framework/views', 'framework/cache', 'framework/sessions', 'logs', 'app'] as $dir) {
     if (! is_dir("/tmp/storage/{$dir}")) {
         mkdir("/tmp/storage/{$dir}", 0777, true);
@@ -37,5 +34,12 @@ if (getenv('DB_CONNECTION') === 'sqlite' && $database && ! file_exists($database
     $app->make(Kernel::class)
         ->call('migrate', ['--force' => true, '--seed' => true]);
 }
+
+// The runtime reports SCRIPT_NAME=/api/index.php, which makes Symfony treat
+// "/api" as the base URL and strip it from /api/* routes. Present the request
+// to Laravel as if it hit public/index.php at the web root.
+$_SERVER['SCRIPT_NAME'] = $_SERVER['PHP_SELF'] = '/index.php';
+$_SERVER['SCRIPT_FILENAME'] = __DIR__.'/../public/index.php';
+unset($_SERVER['PATH_INFO']);
 
 $app->handleRequest(Request::capture());
