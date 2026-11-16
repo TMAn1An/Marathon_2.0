@@ -21,7 +21,8 @@ const initial = {
 
 export default function RegisterPage() {
   const navigate = useNavigate()
-  const { event, holdMinutes, categories } = useEvent()
+  const { event, holdMinutes, categories, status } = useEvent()
+  const optionsReady = status === 'ready' && categories.length > 0
   const [form, setForm] = useState(initial)
   const [errors, setErrors] = useState({})
   const [error, setError] = useState('')
@@ -46,6 +47,7 @@ export default function RegisterPage() {
   const onSubmit = async (e) => {
     e.preventDefault()
     setError('')
+    if (!optionsReady) return
     if (!validate()) return
     setLoading(true)
     try {
@@ -126,11 +128,12 @@ export default function RegisterPage() {
             </div>
 
             <Alert>{error}</Alert>
+            {status === 'error' && <Alert>We couldn&rsquo;t load the registration options. Please refresh the page and try again.</Alert>}
 
             <div className="flex items-center justify-between">
               <p className="text-xs text-slate-500">Your slot will be held for {holdMinutes} minutes after submission.</p>
-              <button type="submit" disabled={loading} className="btn-primary">
-                {loading ? 'Reserving…' : 'Reserve my slot'}
+              <button type="submit" disabled={loading || !optionsReady} className="btn-primary">
+                {loading ? 'Reserving…' : optionsReady ? 'Reserve my slot' : 'Loading…'}
               </button>
             </div>
           </form>

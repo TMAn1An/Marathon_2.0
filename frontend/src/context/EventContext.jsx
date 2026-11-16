@@ -23,6 +23,7 @@ export function EventProvider({ children }) {
   const [categories, setCategories] = useState([])
   const [slots, setSlots] = useState(null)
   const [holdMinutes, setHoldMinutes] = useState(10)
+  const [status, setStatus] = useState('loading') // loading | ready | error
 
   useEffect(() => {
     eventApi.info().then(({ data }) => {
@@ -33,7 +34,8 @@ export function EventProvider({ children }) {
       }
       if (d?.categories) setCategories(d.categories)
       if (d?.hold_minutes) setHoldMinutes(d.hold_minutes)
-    }).catch(() => {})
+      setStatus('ready')
+    }).catch(() => setStatus('error'))
     slotsApi.current().then(({ data }) => setSlots(data?.data || null)).catch(() => {})
   }, [])
 
@@ -43,9 +45,10 @@ export function EventProvider({ children }) {
     categoryLabel: (id) => categories.find((c) => c.id === id)?.label ?? id,
     slots,
     holdMinutes,
+    status,
     totalSlots: slots?.total ?? null,
     distance: event.distance_km,
-  }), [event, categories, slots, holdMinutes])
+  }), [event, categories, slots, holdMinutes, status])
 
   return <EventContext.Provider value={value}>{children}</EventContext.Provider>
 }
